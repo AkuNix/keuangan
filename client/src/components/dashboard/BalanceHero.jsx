@@ -3,7 +3,6 @@ import { cn } from '@/lib/utils';
 import { pulse } from '@/lib/animations';
 import { formatIDR } from '@/lib/utils';
 import { ArrowUpRight, ArrowDownRight, TrendingUp, TrendingDown } from 'lucide-react';
-import { Button } from '@/components/ui';
 
 export function BalanceHero({ stats, animate = true }) {
   const savingsRate = stats.totalIncome > 0
@@ -87,21 +86,12 @@ export function BalanceHero({ stats, animate = true }) {
       </div>
 
       <motion.div
-        className="mt-8 pt-6 border-t border-white/10 flex items-center justify-between"
+        className="mt-8 pt-6 border-t border-white/10"
         initial={false}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.5, duration: 0.4 }}
       >
-        <div className="flex items-center gap-2 text-slate-400 text-sm">
-          <span className="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center">
-            <span className="text-xs font-mono font-bold">••••</span>
-          </span>
-          <span>Akun Utama •••• 1234</span>
-        </div>
-        <Button variant="secondary" size="sm" className="bg-white/10 hover:bg-white/20 text-white border-white/20">
-          Transaksi Baru
-          <ArrowUpRight size={14} />
-        </Button>
+        <p className="text-xs text-slate-500 text-center">Data diperbarui secara real-time</p>
       </motion.div>
     </motion.div>
   );

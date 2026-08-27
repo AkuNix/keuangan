@@ -107,7 +107,6 @@ export function Topbar({ onMenuClick, user, onLogout, title }) {
                 aria-label="Notifikasi"
               >
                 <Bell size={20} strokeWidth={2} className="text-slate-500 dark:text-slate-400" />
-                <span className="absolute -top-0.5 -right-0.5 w-4 h-4 bg-rose-500 rounded-full text-[10px] font-bold text-white flex items-center justify-center">3</span>
               </button>
               <AnimatePresence>
                 {notifOpen && (
