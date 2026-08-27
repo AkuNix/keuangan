@@ -6,43 +6,40 @@ import {
 } from 'recharts';
 import {
   LogOut, Plus, Edit2, Trash2, Search, X, BookOpen, LayoutDashboard, List, Menu,
-  ArrowUpRight, ArrowDownRight
+  ArrowUpRight, ArrowDownRight, TrendingUp, TrendingDown
 } from 'lucide-react';
 
+/* ═══════════════════════════════════════════════════════
+   Palette — warm neutrals, single accent, semantic colors
+   ═══════════════════════════════════════════════════════ */
 const C = {
-  canvas:    '#f8fafc',
+  canvas:    '#f5f3ef',
   surface:   '#ffffff',
-  surface2:  '#f8fafc',
-  panel:     '#0f172a',
-  panel2:    '#111827',
-  rule:      '#e2e8f0',
-  ruleSoft:  '#f1f5f9',
-  ink:       '#0f172a',
-  inkMid:    '#334155',
-  inkFaint:  '#64748b',
-  inkSoft:   '#94a3b8',
-  green:     '#059669',
-  greenBg:   '#ecfdf5',
-  greenMid:  '#047857',
-  red:       '#e11d48',
-  redBg:     '#fff1f2',
-  accent:    '#4f46e5',
-  accentBg:  '#eef2ff',
-  brandBg:   '#eef2ff',
-  amber:     '#d97706',
-  shadow:    'rgba(15, 23, 42, 0.08)',
+  surfaceDim:'#faf9f7',
+  surfaceHov:'#f0efec',
+  ink:       '#1a1a1a',
+  ink2:      '#555555',
+  ink3:      '#888888',
+  border:    '#e5e5e5',
+  accent:    '#4338ca',
+  accentHov: '#3730a3',
+  accentSoft:'#eef2ff',
+  green:     '#16a34a',
+  greenSoft: '#f0fdf4',
+  red:       '#dc2626',
+  redSoft:   '#fef2f2',
 };
 
-const CAT_COLORS = ['#4f46e5', '#059669', '#f59e0b', '#e11d48', '#8b5cf6', '#06b6d4', '#7c3aed'];
+const CAT_COLORS = ['#4338ca', '#16a34a', '#d97706', '#dc2626', '#7c3aed', '#0891b2', '#be185d'];
 
-const formatIDR = (num) =>
-  new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(num);
+const formatIDR = (n) =>
+  new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(n);
 
-const formatShort = (num) => {
-  if (Math.abs(num) >= 1_000_000_000) return (num / 1_000_000_000).toFixed(1) + 'M';
-  if (Math.abs(num) >= 1_000_000)     return (num / 1_000_000).toFixed(1) + 'jt';
-  if (Math.abs(num) >= 1_000)         return (num / 1_000).toFixed(0) + 'rb';
-  return num;
+const formatShort = (n) => {
+  if (Math.abs(n) >= 1e9) return (n / 1e9).toFixed(1) + 'M';
+  if (Math.abs(n) >= 1e6) return (n / 1e6).toFixed(1) + 'jt';
+  if (Math.abs(n) >= 1e3) return (n / 1e3).toFixed(0) + 'rb';
+  return n;
 };
 
 const CATEGORIES = {
@@ -50,64 +47,53 @@ const CATEGORIES = {
   EXPENSE: ['Makanan', 'Transportasi', 'Belanja', 'Tagihan', 'Hiburan', 'Kesehatan', 'Lain-lain'],
 };
 
-/* ── Balance Summary ── */
+/* ═══════════════════════════════════════════════════════
+   Balance Summary — clean horizontal strip
+   ═══════════════════════════════════════════════════════ */
 function BalanceBar({ stats }) {
   const savingsRate = stats.totalIncome > 0
     ? Math.round(((stats.totalIncome - stats.totalExpense) / stats.totalIncome) * 100)
     : 0;
-  const expensePct = stats.totalIncome > 0
-    ? Math.min(100, Math.round((stats.totalExpense / stats.totalIncome) * 100))
-    : 0;
 
   return (
     <section className="balance-bar" style={{
-      background: C.panel,
-      borderRadius: 20,
-      padding: '24px 28px',
-      color: '#fff',
-      overflow: 'hidden',
+      background: C.surface,
+      border: `1px solid ${C.border}`,
+      borderRadius: 'var(--radius-md)',
+      padding: '20px 24px',
     }}>
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 20, alignItems: 'start' }}>
-        {/* Left: Balance */}
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 24, alignItems: 'center' }}>
+        {/* Balance */}
         <div style={{ minWidth: 0 }}>
-          <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.5)', marginBottom: 6, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Saldo</div>
-          <p className="font-ledger balance-val" style={{ color: '#fff', margin: 0 }}>
+          <div style={{ fontSize: 12, fontWeight: 500, color: C.ink3, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 4 }}>Saldo</div>
+          <div className="font-tab" style={{ fontSize: 'clamp(1.25rem, 3vw, 1.75rem)', fontWeight: 700, color: C.ink, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
             {formatIDR(stats.balance)}
-          </p>
+          </div>
         </div>
 
-        {/* Middle: Income / Expense */}
-        <div style={{ display: 'flex', gap: 16, minWidth: 0 }}>
-          <div style={{ minWidth: 0, flex: 1 }}>
-            <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.5)', marginBottom: 6, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Pemasukan</div>
-            <div className="font-ledger" style={{ fontSize: 'clamp(14px, 2vw, 18px)', fontWeight: 700, color: '#34d399', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-              +{formatIDR(stats.totalIncome)}
-            </div>
+        {/* Income */}
+        <div style={{ minWidth: 0 }}>
+          <div style={{ fontSize: 12, fontWeight: 500, color: C.ink3, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 4 }}>Pemasukan</div>
+          <div className="font-tab" style={{ fontSize: 'clamp(14px, 2vw, 18px)', fontWeight: 600, color: C.green, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+            +{formatIDR(stats.totalIncome)}
           </div>
-          <div style={{ minWidth: 0, flex: 1 }}>
-            <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.5)', marginBottom: 6, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Pengeluaran</div>
-            <div className="font-ledger" style={{ fontSize: 'clamp(14px, 2vw, 18px)', fontWeight: 700, color: '#f87171', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+        </div>
+
+        {/* Expense + Rate */}
+        <div style={{ minWidth: 0 }}>
+          <div style={{ fontSize: 12, fontWeight: 500, color: C.ink3, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 4 }}>Pengeluaran</div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <div className="font-tab" style={{ fontSize: 'clamp(14px, 2vw, 18px)', fontWeight: 600, color: C.red, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
               -{formatIDR(stats.totalExpense)}
             </div>
-          </div>
-        </div>
-
-        {/* Right: Savings rate */}
-        <div style={{ minWidth: 0 }}>
-          <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.5)', marginBottom: 6, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Rasio hemat</div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-            <span className="font-ledger" style={{ fontSize: 20, fontWeight: 700, color: savingsRate >= 0 ? '#34d399' : '#f87171' }}>{savingsRate}%</span>
-            <div style={{ flex: 1, height: 6, background: 'rgba(255,255,255,0.1)', borderRadius: 99, overflow: 'hidden' }}>
-              <div style={{
-                height: '100%',
-                width: '100%',
-                background: expensePct > 85 ? '#f87171' : expensePct > 60 ? '#fbbf24' : '#34d399',
-                borderRadius: 99,
-                transformOrigin: 'left',
-                transform: `scaleX(${expensePct / 100})`,
-                transition: 'transform 0.6s ease',
-              }} />
-            </div>
+            <span style={{
+              fontSize: 11, fontWeight: 600, padding: '2px 8px', borderRadius: 99,
+              background: savingsRate >= 30 ? C.greenSoft : savingsRate >= 0 ? '#fffbeb' : C.redSoft,
+              color: savingsRate >= 30 ? C.green : savingsRate >= 0 ? '#92400e' : C.red,
+              flexShrink: 0,
+            }}>
+              {savingsRate}%
+            </span>
           </div>
         </div>
       </div>
@@ -115,26 +101,30 @@ function BalanceBar({ stats }) {
   );
 }
 
-/* ── Chart Tooltip ── */
-function LedgerTooltip({ active, payload, label }) {
+/* ═══════════════════════════════════════════════════════
+   Tooltip
+   ═══════════════════════════════════════════════════════ */
+function ChartTooltip({ active, payload, label }) {
   if (!active || !payload?.length) return null;
   return (
     <div style={{
-      background: '#fff', border: `1px solid ${C.rule}`, borderRadius: 12,
-      padding: '10px 14px', fontFamily: 'var(--font-mono)', fontSize: 12, color: C.ink,
-      boxShadow: '0 8px 24px rgba(15,23,42,0.12)',
+      background: C.ink, color: '#fff', borderRadius: 'var(--radius-sm)',
+      padding: '8px 12px', fontSize: 12, lineHeight: 1.5,
     }}>
-      <p style={{ marginBottom: 6, color: C.inkFaint, fontSize: 10, fontWeight: 700, letterSpacing: '0.04em' }}>{label}</p>
+      <div style={{ fontWeight: 600, marginBottom: 4, fontSize: 11, opacity: 0.7 }}>{label}</div>
       {payload.map((p) => (
-        <p key={p.dataKey} style={{ margin: '2px 0', color: p.dataKey === 'income' ? C.greenMid : C.red }}>
-          {p.name}: {formatIDR(p.value)}
-        </p>
+        <div key={p.dataKey} style={{ display: 'flex', justifyContent: 'space-between', gap: 16 }}>
+          <span style={{ opacity: 0.8 }}>{p.name}</span>
+          <span className="font-tab" style={{ fontWeight: 600 }}>{formatIDR(p.value)}</span>
+        </div>
       ))}
     </div>
   );
 }
 
-/* ── Main Dashboard ── */
+/* ═══════════════════════════════════════════════════════
+   Dashboard
+   ═══════════════════════════════════════════════════════ */
 export default function Dashboard({ user, onLogout }) {
   const [transactions, setTransactions]   = useState([]);
   const [stats, setStats]                 = useState({ totalIncome: 0, totalExpense: 0, balance: 0, categoryBreakdown: [], monthlyTrend: [] });
@@ -155,18 +145,15 @@ export default function Dashboard({ user, onLogout }) {
   useEffect(() => { fetchData(); }, []);
 
   useEffect(() => {
-    const handleEsc = (e) => { if (e.key === 'Escape') setShowModal(false); };
-    if (showModal) {
-      document.addEventListener('keydown', handleEsc);
-      return () => document.removeEventListener('keydown', handleEsc);
-    }
+    const h = (e) => { if (e.key === 'Escape') setShowModal(false); };
+    if (showModal) { document.addEventListener('keydown', h); return () => document.removeEventListener('keydown', h); }
   }, [showModal]);
 
   const fetchData = async () => {
     try {
-      const [txData, statsData] = await Promise.all([api.getTransactions(1, 200), api.getDashboardStats()]);
-      setTransactions(txData.data || txData);
-      setStats(statsData);
+      const [tx, st] = await Promise.all([api.getTransactions(1, 200), api.getDashboardStats()]);
+      setTransactions(tx.data || tx);
+      setStats(st);
     } catch (e) { console.error(e); }
   };
 
@@ -208,212 +195,193 @@ export default function Dashboard({ user, onLogout }) {
 
   const initials = user?.name ? user.name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase() : '??';
 
-  /* ── Sidebar nav item ── */
-  const NavBtn = ({ id, icon: Icon, label }) => {
+  const NavItem = ({ id, icon: Icon, label }) => {
     const active = view === id;
     return (
       <button onClick={() => { setView(id); setSidebarOpen(false); }} style={{
-        display: 'flex', alignItems: 'center', gap: 12,
-        padding: '10px 14px', width: '100%', border: 'none',
-        background: active ? 'rgba(255,255,255,0.08)' : 'transparent',
+        display: 'flex', alignItems: 'center', gap: 10, width: '100%',
+        padding: '8px 12px', border: 'none', borderRadius: 'var(--radius-sm)',
+        background: active ? 'rgba(255,255,255,0.1)' : 'transparent',
         color: active ? '#fff' : 'rgba(255,255,255,0.5)',
-        borderRadius: 12, fontSize: 13, fontWeight: 600,
-        cursor: 'pointer', transition: 'all 0.15s ease',
-        textAlign: 'left',
+        fontSize: 13, fontWeight: 600, cursor: 'pointer',
+        transition: 'background 0.12s, color 0.12s', textAlign: 'left',
       }}>
-        <Icon size={18} strokeWidth={active ? 2 : 1.5} />
+        <Icon size={16} strokeWidth={active ? 2 : 1.5} />
         {label}
       </button>
     );
   };
 
   return (
-    <div className="dashboard-shell" style={{ display: 'flex', minHeight: '100vh', background: C.canvas, fontFamily: 'var(--font-sans)', color: C.ink }}>
+    <div className="dashboard-shell" style={{ display: 'flex', minHeight: '100vh', background: C.canvas, fontFamily: 'var(--font-body)', color: C.ink }}>
 
-      {/* ── Sidebar overlay ── */}
-      {sidebarOpen && <div onClick={() => setSidebarOpen(false)}
-        style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.3)', zIndex: 29 }}
-        className="mobile-overlay" />}
+      {sidebarOpen && <div onClick={() => setSidebarOpen(false)} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.3)', zIndex: 29 }} className="mobile-overlay" />}
 
-      {/* ── Sidebar ── */}
       <aside className={`sidebar ${sidebarOpen ? 'open' : ''}`}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 32, color: '#fff' }}>
-          <div style={{ width: 36, height: 36, borderRadius: 10, display: 'grid', placeItems: 'center', background: 'rgba(255,255,255,0.08)', flexShrink: 0 }}>
-            <BookOpen size={18} strokeWidth={1.7} />
+        {/* Brand */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '4px 8px', marginBottom: 24 }}>
+          <div style={{ width: 28, height: 28, borderRadius: 6, display: 'grid', placeItems: 'center', background: 'rgba(255,255,255,0.1)', flexShrink: 0 }}>
+            <BookOpen size={14} color="#fff" />
           </div>
-          <div style={{ overflow: 'hidden', minWidth: 0 }}>
-            <div style={{ fontSize: 15, fontWeight: 700, letterSpacing: '-0.01em', lineHeight: 1.2, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>KeuanganKu</div>
-            <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.4)' }}>Finance tracker</div>
-          </div>
+          <span style={{ fontSize: 14, fontWeight: 700, color: '#fff', letterSpacing: '-0.01em' }}>KeuanganKu</span>
         </div>
 
+        {/* Nav */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: 2, flex: 1 }}>
-          <NavBtn id="dashboard" icon={LayoutDashboard} label="Dashboard" />
-          <NavBtn id="ledger" icon={List} label="Buku Kas" />
+          <NavItem id="dashboard" icon={LayoutDashboard} label="Dashboard" />
+          <NavItem id="ledger" icon={List} label="Buku Kas" />
         </div>
 
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '12px', borderRadius: 12, background: 'rgba(255,255,255,0.04)', marginBottom: 8, minWidth: 0 }}>
-          <div style={{
-            width: 34, height: 34, borderRadius: 10, flexShrink: 0,
-            background: 'rgba(255,255,255,0.1)', color: '#fff',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            fontFamily: 'var(--font-mono)', fontSize: 12, fontWeight: 600,
-          }}>
-            {initials}
+        {/* User */}
+        <div style={{ marginTop: 'auto' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px', borderRadius: 'var(--radius-sm)', background: 'rgba(255,255,255,0.05)', marginBottom: 6, minWidth: 0 }}>
+            <div style={{ width: 28, height: 28, borderRadius: 6, background: 'rgba(255,255,255,0.12)', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'var(--font-mono)', fontSize: 11, fontWeight: 600, flexShrink: 0 }}>{initials}</div>
+            <div style={{ flex: 1, minWidth: 0, overflow: 'hidden' }}>
+              <div style={{ fontSize: 12, fontWeight: 600, color: '#fff', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{user?.name}</div>
+              <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.35)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{user?.email}</div>
+            </div>
           </div>
-          <div style={{ flex: 1, minWidth: 0, overflow: 'hidden' }}>
-            <div style={{ fontSize: 13, fontWeight: 600, color: '#fff', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{user?.name || 'User'}</div>
-            <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.4)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{user?.email}</div>
-          </div>
+          <button onClick={onLogout} style={{
+            display: 'flex', alignItems: 'center', gap: 6, width: '100%',
+            padding: '8px', border: 'none', borderRadius: 'var(--radius-sm)',
+            background: 'transparent', color: 'rgba(255,255,255,0.4)',
+            fontSize: 12, fontWeight: 500, cursor: 'pointer',
+          }}
+          onMouseEnter={e => e.currentTarget.style.color = '#f87171'}
+          onMouseLeave={e => e.currentTarget.style.color = 'rgba(255,255,255,0.4)'}>
+            <LogOut size={14} />
+            Keluar
+          </button>
         </div>
-
-        <button onClick={onLogout} style={{
-          display: 'flex', alignItems: 'center', gap: 8, width: '100%',
-          border: 'none', background: 'transparent', color: 'rgba(255,255,255,0.4)',
-          cursor: 'pointer', padding: '10px 12px', borderRadius: 10,
-          fontSize: 13, fontWeight: 600, transition: 'color 0.15s',
-        }}
-        onMouseEnter={e => e.currentTarget.style.color = '#f87171'}
-        onMouseLeave={e => e.currentTarget.style.color = 'rgba(255,255,255,0.4)'}>
-          <LogOut size={16} />
-          Keluar
-        </button>
       </aside>
 
-      {/* ── Main ── */}
+      {/* Main */}
       <div className="dashboard-main" style={{ flex: 1, minWidth: 0, overflow: 'auto' }}>
 
-        {/* ── Topbar ── */}
+        {/* Topbar */}
         <header className="dashboard-topbar" style={{
-          borderBottom: `1px solid ${C.rule}`,
-          padding: '0 24px', height: 60,
+          borderBottom: `1px solid ${C.border}`,
+          padding: '0 24px', height: 52,
           display: 'flex', alignItems: 'center', justifyContent: 'space-between',
           background: C.surface, position: 'sticky', top: 0, zIndex: 20,
         }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 12, minWidth: 0 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10, minWidth: 0 }}>
             <button onClick={() => setSidebarOpen(!sidebarOpen)} style={{
-              display: 'none', border: `1px solid ${C.rule}`, background: '#fff', color: C.ink,
-              cursor: 'pointer', padding: 8, borderRadius: 10,
+              display: 'none', border: `1px solid ${C.border}`, background: C.surface, color: C.ink,
+              cursor: 'pointer', padding: 6, borderRadius: 'var(--radius-sm)',
             }} className="mobile-menu-btn">
-              <Menu size={18} />
+              <Menu size={16} />
             </button>
-            <div style={{ minWidth: 0 }}>
-              <div style={{ fontWeight: 700, fontSize: 15, color: C.ink, letterSpacing: '-0.01em' }}>
-                {view === 'dashboard' ? 'Dashboard' : 'Buku Kas'}
-              </div>
-            </div>
+            <span style={{ fontWeight: 600, fontSize: 14, color: C.ink }}>
+              {view === 'dashboard' ? 'Dashboard' : 'Buku Kas'}
+            </span>
           </div>
           <button onClick={openAdd} style={{
-            display: 'flex', alignItems: 'center', gap: 6,
-            padding: '9px 16px', background: C.accent, color: '#fff',
-            border: 'none', borderRadius: 10, fontSize: 13, fontWeight: 600,
-            cursor: 'pointer', transition: 'background 0.15s',
-            flexShrink: 0,
+            display: 'flex', alignItems: 'center', gap: 5,
+            padding: '7px 14px', background: C.accent, color: '#fff',
+            border: 'none', borderRadius: 'var(--radius-sm)',
+            fontSize: 13, fontWeight: 600, cursor: 'pointer',
+            transition: 'background 0.12s', flexShrink: 0,
           }}
-          onMouseEnter={e => e.currentTarget.style.background = '#4338ca'}
+          onMouseEnter={e => e.currentTarget.style.background = C.accentHov}
           onMouseLeave={e => e.currentTarget.style.background = C.accent}>
-            <Plus size={15} strokeWidth={2.5} />
+            <Plus size={14} strokeWidth={2.5} />
             <span className="hide-mobile">Tambah</span>
           </button>
         </header>
 
-        {/* ── Content ── */}
-        <div style={{ padding: '20px 24px 64px', maxWidth: 1200, margin: '0 auto' }}>
+        {/* Content */}
+        <div style={{ padding: '20px 24px 64px', maxWidth: 1100, margin: '0 auto' }}>
 
-          {/* ── Balance Bar ── */}
           <BalanceBar stats={stats} />
 
           {view === 'dashboard' && (
             <>
-              {/* ── Charts ── */}
-              <div style={{ display: 'grid', gridTemplateColumns: '1.3fr 0.7fr', gap: 16, marginTop: 20 }}>
+              {/* Charts */}
+              <div style={{ display: 'grid', gridTemplateColumns: '1.4fr 0.6fr', gap: 16, marginTop: 16 }}>
 
                 {/* Bar chart */}
-                <div style={{ border: `1px solid ${C.rule}`, borderRadius: 16, padding: 20, background: C.surface, overflow: 'hidden' }}>
+                <div style={{ border: `1px solid ${C.border}`, borderRadius: 'var(--radius-md)', padding: 20, background: C.surface }}>
                   <div style={{ marginBottom: 16 }}>
-                    <div style={{ fontSize: 15, fontWeight: 700, color: C.ink }}>Arus kas bulanan</div>
-                    <div style={{ marginTop: 4, fontSize: 12, color: C.inkFaint }}>Pemasukan vs pengeluaran</div>
+                    <div style={{ fontSize: 14, fontWeight: 700, color: C.ink }}>Arus kas bulanan</div>
                   </div>
                   {stats.monthlyTrend.length > 0 ? (
-                    <div style={{ height: 240 }}>
+                    <div style={{ height: 220 }}>
                       <ResponsiveContainer width="100%" height="100%">
-                        <BarChart data={stats.monthlyTrend} margin={{ top: 4, right: 0, left: -20, bottom: 0 }} barGap={4}>
-                          <CartesianGrid strokeDasharray="none" horizontal stroke={C.ruleSoft} vertical={false} />
-                          <XAxis dataKey="month" tick={{ fontFamily: 'var(--font-mono)', fontSize: 10, fill: C.inkFaint }} tickLine={false} axisLine={false} />
-                          <YAxis tick={{ fontFamily: 'var(--font-mono)', fontSize: 10, fill: C.inkFaint }} tickLine={false} axisLine={false} tickFormatter={formatShort} />
-                          <Tooltip content={<LedgerTooltip />} cursor={{ fill: `${C.accent}06` }} />
-                          <Bar dataKey="income"  name="Pemasukan"   fill={C.green} radius={[4,4,0,0]} maxBarSize={28} />
-                          <Bar dataKey="expense" name="Pengeluaran" fill={C.red}   radius={[4,4,0,0]} maxBarSize={28} />
+                        <BarChart data={stats.monthlyTrend} margin={{ top: 4, right: 0, left: -20, bottom: 0 }} barGap={3}>
+                          <CartesianGrid strokeDasharray="3 3" stroke={C.border} vertical={false} />
+                          <XAxis dataKey="month" tick={{ fontFamily: 'var(--font-mono)', fontSize: 10, fill: C.ink3 }} tickLine={false} axisLine={false} />
+                          <YAxis tick={{ fontFamily: 'var(--font-mono)', fontSize: 10, fill: C.ink3 }} tickLine={false} axisLine={false} tickFormatter={formatShort} />
+                          <Tooltip content={<ChartTooltip />} cursor={{ fill: 'rgba(0,0,0,0.03)' }} />
+                          <Bar dataKey="income"  name="Pemasukan"   fill={C.green} radius={[3,3,0,0]} maxBarSize={24} />
+                          <Bar dataKey="expense" name="Pengeluaran" fill={C.red}   radius={[3,3,0,0]} maxBarSize={24} />
                         </BarChart>
                       </ResponsiveContainer>
                     </div>
                   ) : (
-                    <div style={{ height: 240, display: 'flex', alignItems: 'center', justifyContent: 'center', color: C.inkFaint, fontSize: 13, background: C.surface2, borderRadius: 12, border: `1px dashed ${C.rule}` }}>
+                    <div style={{ height: 220, display: 'flex', alignItems: 'center', justifyContent: 'center', color: C.ink3, fontSize: 13, background: C.surfaceDim, borderRadius: 'var(--radius-sm)', border: `1px dashed ${C.border}` }}>
                       Belum ada data bulan ini.
                     </div>
                   )}
-                  <div style={{ display: 'flex', gap: 16, marginTop: 14 }}>
-                    {[['Pemasukan', C.green], ['Pengeluaran', C.red]].map(([label, color]) => (
-                      <div key={label} style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                        <div style={{ width: 8, height: 8, borderRadius: 99, background: color }} />
-                        <span style={{ fontSize: 12, color: C.inkMid }}>{label}</span>
+                  <div style={{ display: 'flex', gap: 16, marginTop: 12 }}>
+                    {[['Pemasukan', C.green], ['Pengeluaran', C.red]].map(([l, c]) => (
+                      <div key={l} style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
+                        <div style={{ width: 8, height: 8, borderRadius: 2, background: c }} />
+                        <span style={{ fontSize: 11, color: C.ink2 }}>{l}</span>
                       </div>
                     ))}
                   </div>
                 </div>
 
                 {/* Donut */}
-                <div style={{ border: `1px solid ${C.rule}`, borderRadius: 16, padding: 20, background: C.surface, overflow: 'hidden' }}>
+                <div style={{ border: `1px solid ${C.border}`, borderRadius: 'var(--radius-md)', padding: 20, background: C.surface }}>
                   <div style={{ marginBottom: 16 }}>
-                    <div style={{ fontSize: 15, fontWeight: 700, color: C.ink }}>Pengeluaran per kategori</div>
-                    <div style={{ marginTop: 4, fontSize: 12, color: C.inkFaint }}>Komposisi belanja</div>
+                    <div style={{ fontSize: 14, fontWeight: 700, color: C.ink }}>Per kategori</div>
                   </div>
                   {stats.categoryBreakdown.length > 0 ? (
                     <>
-                      <div style={{ height: 140 }}>
+                      <div style={{ height: 130 }}>
                         <ResponsiveContainer width="100%" height="100%">
                           <PieChart>
-                            <Pie data={stats.categoryBreakdown} innerRadius={48} outerRadius={68} paddingAngle={3} dataKey="value" strokeWidth={0}>
-                              {stats.categoryBreakdown.map((_, i) => (
-                                <Cell key={i} fill={CAT_COLORS[i % CAT_COLORS.length]} />
-                              ))}
+                            <Pie data={stats.categoryBreakdown} innerRadius={40} outerRadius={58} paddingAngle={2} dataKey="value" strokeWidth={0}>
+                              {stats.categoryBreakdown.map((_, i) => <Cell key={i} fill={CAT_COLORS[i % CAT_COLORS.length]} />)}
                             </Pie>
-                            <Tooltip formatter={(v) => [formatIDR(v)]} contentStyle={{ background: '#fff', border: `1px solid ${C.rule}`, borderRadius: 10, color: C.ink, fontFamily: 'var(--font-mono)', fontSize: 11 }} />
+                            <Tooltip formatter={(v) => [formatIDR(v)]} contentStyle={{ background: C.ink, color: '#fff', border: 'none', borderRadius: 'var(--radius-sm)', fontSize: 12 }} />
                           </PieChart>
                         </ResponsiveContainer>
                       </div>
-                      <div style={{ marginTop: 14, display: 'flex', flexDirection: 'column', gap: 6 }}>
+                      <div style={{ marginTop: 12, display: 'flex', flexDirection: 'column', gap: 4 }}>
                         {stats.categoryBreakdown.slice(0, 5).map((item, i) => {
                           const pct = stats.totalExpense > 0 ? Math.round((item.value / stats.totalExpense) * 100) : 0;
                           return (
-                            <div key={item.name} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '6px 8px', borderRadius: 8, background: C.surface2, minWidth: 0 }}>
-                              <div style={{ width: 8, height: 8, borderRadius: 99, background: CAT_COLORS[i % CAT_COLORS.length], flexShrink: 0 }} />
-                              <span style={{ fontSize: 12, color: C.inkMid, flex: 1, minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{item.name}</span>
-                              <span style={{ fontFamily: 'var(--font-mono)', fontSize: 12, color: C.ink, fontWeight: 700, flexShrink: 0 }}>{pct}%</span>
+                            <div key={item.name} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '4px 6px', borderRadius: 4, minWidth: 0 }}>
+                              <div style={{ width: 6, height: 6, borderRadius: 1, background: CAT_COLORS[i % CAT_COLORS.length], flexShrink: 0 }} />
+                              <span style={{ fontSize: 11, color: C.ink2, flex: 1, minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{item.name}</span>
+                              <span className="font-tab" style={{ fontSize: 11, color: C.ink, fontWeight: 600, flexShrink: 0 }}>{pct}%</span>
                             </div>
                           );
                         })}
                       </div>
                     </>
                   ) : (
-                    <div style={{ height: 200, display: 'flex', alignItems: 'center', justifyContent: 'center', color: C.inkFaint, fontSize: 13, background: C.surface2, borderRadius: 12, border: `1px dashed ${C.rule}` }}>
+                    <div style={{ height: 180, display: 'flex', alignItems: 'center', justifyContent: 'center', color: C.ink3, fontSize: 13, background: C.surfaceDim, borderRadius: 'var(--radius-sm)', border: `1px dashed ${C.border}` }}>
                       Belum ada pengeluaran.
                     </div>
                   )}
                 </div>
               </div>
 
-              {/* ── Recent Transactions ── */}
+              {/* Recent Transactions */}
               <div style={{ marginTop: 24 }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
-                  <div style={{ fontSize: 15, fontWeight: 700, color: C.ink }}>Transaksi terbaru</div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
+                  <span style={{ fontSize: 14, fontWeight: 700, color: C.ink }}>Transaksi terbaru</span>
                   {transactions.length > 5 && (
-                    <button onClick={() => setView('ledger')} style={{ background: 'none', border: 'none', color: C.accent, fontSize: 12, fontWeight: 600, cursor: 'pointer' }}>
+                    <button onClick={() => setView('ledger')} style={{ background: 'none', border: 'none', color: C.accent, fontSize: 12, fontWeight: 600, cursor: 'pointer', padding: 0 }}>
                       Lihat semua
                     </button>
                   )}
                 </div>
-                <div style={{ border: `1px solid ${C.rule}`, borderRadius: 16, overflow: 'hidden', background: C.surface }}>
+                <div style={{ border: `1px solid ${C.border}`, borderRadius: 'var(--radius-md)', overflow: 'hidden', background: C.surface }}>
                   <TransactionTable rows={transactions.slice(0, 5)} onEdit={openEdit} onDelete={handleDelete} />
                 </div>
               </div>
@@ -422,39 +390,32 @@ export default function Dashboard({ user, onLogout }) {
 
           {view === 'ledger' && (
             <>
-              {/* ── Filters ── */}
-              <div style={{ display: 'flex', gap: 10, marginTop: 20, marginBottom: 16, alignItems: 'center', flexWrap: 'wrap' }}>
-                <div style={{ position: 'relative', flex: '1 1 240px', maxWidth: 320, minWidth: 0 }}>
-                  <Search size={15} style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', color: C.inkFaint, pointerEvents: 'none' }} />
-                  <input
-                    type="text"
-                    placeholder="Cari transaksi..."
-                    value={search}
-                    onChange={e => setSearch(e.target.value)}
-                    style={{
-                      width: '100%', paddingLeft: 36, paddingRight: 12, paddingTop: 10, paddingBottom: 10,
-                      background: C.surface, border: `1px solid ${C.rule}`, borderRadius: 10,
-                      fontSize: 13, color: C.ink, outline: 'none', boxSizing: 'border-box',
-                    }}
-                  />
+              <div style={{ display: 'flex', gap: 8, marginTop: 16, marginBottom: 12, alignItems: 'center', flexWrap: 'wrap' }}>
+                <div style={{ position: 'relative', flex: '1 1 200px', maxWidth: 300, minWidth: 0 }}>
+                  <Search size={14} style={{ position: 'absolute', left: 10, top: '50%', transform: 'translateY(-50%)', color: C.ink3, pointerEvents: 'none' }} />
+                  <input type="text" placeholder="Cari..." value={search} onChange={e => setSearch(e.target.value)} style={{
+                    width: '100%', paddingLeft: 32, paddingRight: 10, paddingTop: 8, paddingBottom: 8,
+                    background: C.surface, border: `1px solid ${C.border}`, borderRadius: 'var(--radius-sm)',
+                    fontSize: 13, color: C.ink, outline: 'none', boxSizing: 'border-box',
+                  }} />
                 </div>
                 {['ALL', 'INCOME', 'EXPENSE'].map(f => (
                   <button key={f} onClick={() => setTypeFilter(f)} style={{
-                    padding: '9px 14px', borderRadius: 99, border: `1px solid ${typeFilter === f ? C.accent : C.rule}`,
+                    padding: '7px 12px', borderRadius: 'var(--radius-sm)',
+                    border: `1px solid ${typeFilter === f ? C.accent : C.border}`,
                     background: typeFilter === f ? C.accent : C.surface,
-                    color: typeFilter === f ? '#fff' : C.inkMid,
+                    color: typeFilter === f ? '#fff' : C.ink2,
                     fontSize: 12, fontWeight: 600, cursor: 'pointer',
-                    transition: 'all 0.15s', flexShrink: 0,
+                    transition: 'all 0.12s', flexShrink: 0,
                   }}>
-                    { f === 'ALL' ? 'Semua' : f === 'INCOME' ? 'Pemasukan' : 'Pengeluaran' }
+                    {f === 'ALL' ? 'Semua' : f === 'INCOME' ? 'Masuk' : 'Keluar'}
                   </button>
                 ))}
-                <span style={{ marginLeft: 'auto', fontFamily: 'var(--font-mono)', fontSize: 12, color: C.inkFaint, flexShrink: 0 }}>
+                <span className="font-tab" style={{ marginLeft: 'auto', fontSize: 11, color: C.ink3, flexShrink: 0 }}>
                   {filtered.length} baris
                 </span>
               </div>
-
-              <div style={{ border: `1px solid ${C.rule}`, borderRadius: 16, overflow: 'hidden', background: C.surface }}>
+              <div style={{ border: `1px solid ${C.border}`, borderRadius: 'var(--radius-md)', overflow: 'hidden', background: C.surface }}>
                 <TransactionTable rows={filtered} onEdit={openEdit} onDelete={handleDelete} />
               </div>
             </>
@@ -462,7 +423,7 @@ export default function Dashboard({ user, onLogout }) {
         </div>
       </div>
 
-      {/* ── Modal ── */}
+      {/* Modal */}
       {showModal && (
         <div className="dashboard-modal" style={{
           position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.4)',
@@ -470,37 +431,33 @@ export default function Dashboard({ user, onLogout }) {
           zIndex: 50, padding: 16,
         }}>
           <div className="dashboard-modal-card" style={{
-            background: C.surface, borderRadius: 20, width: '100%', maxWidth: 440,
-            overflow: 'hidden', boxShadow: '0 20px 60px rgba(0,0,0,0.2)',
+            background: C.surface, borderRadius: 'var(--radius-lg)', width: '100%', maxWidth: 420,
+            boxShadow: 'var(--shadow-lg)',
           }}>
-            {/* Header */}
-            <div style={{ padding: '20px 24px', borderBottom: `1px solid ${C.rule}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <div style={{ padding: '16px 20px', borderBottom: `1px solid ${C.border}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
               <div>
-                <p style={{ fontWeight: 700, fontSize: 16, color: C.ink }}>
-                  {editingTx ? 'Edit transaksi' : 'Transaksi baru'}
-                </p>
-                <p style={{ fontSize: 12, color: C.inkFaint, marginTop: 2 }}>
+                <p style={{ fontWeight: 700, fontSize: 15, color: C.ink, margin: 0 }}>{editingTx ? 'Edit transaksi' : 'Transaksi baru'}</p>
+                <p style={{ fontSize: 11, color: C.ink3, marginTop: 2, margin: '2px 0 0' }}>
                   {new Date().toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
                 </p>
               </div>
-              <button onClick={() => setShowModal(false)} style={{ background: 'none', border: 'none', color: C.inkFaint, cursor: 'pointer', padding: 6, borderRadius: 8 }}>
-                <X size={18} />
+              <button onClick={() => setShowModal(false)} style={{ background: 'none', border: 'none', color: C.ink3, cursor: 'pointer', padding: 4 }}>
+                <X size={16} />
               </button>
             </div>
 
-            <form onSubmit={handleSubmit} style={{ padding: '20px 24px', display: 'flex', flexDirection: 'column', gap: 14 }}>
-
+            <form onSubmit={handleSubmit} style={{ padding: '16px 20px', display: 'flex', flexDirection: 'column', gap: 12 }}>
               {/* Type toggle */}
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 6, padding: 3, background: C.surface2, borderRadius: 12 }}>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 4, padding: 3, background: C.surfaceDim, borderRadius: 'var(--radius-sm)' }}>
                 {['INCOME', 'EXPENSE'].map(t => (
                   <button key={t} type="button" onClick={() => { setFType(t); setFCategory(CATEGORIES[t][0]); }}
                     style={{
-                      padding: '10px 0', borderRadius: 10, border: 'none', cursor: 'pointer',
-                      fontWeight: 700, fontSize: 13,
+                      padding: '8px 0', borderRadius: 6, border: 'none', cursor: 'pointer',
+                      fontWeight: 600, fontSize: 12,
                       background: fType === t ? C.surface : 'transparent',
-                      color: fType === t ? (t === 'INCOME' ? C.greenMid : C.red) : C.inkFaint,
-                      boxShadow: fType === t ? '0 1px 3px rgba(0,0,0,0.08)' : 'none',
-                      transition: 'all 0.15s ease',
+                      color: fType === t ? (t === 'INCOME' ? C.green : C.red) : C.ink3,
+                      boxShadow: fType === t ? 'var(--shadow-sm)' : 'none',
+                      transition: 'all 0.12s',
                     }}>
                     {t === 'INCOME' ? 'Pemasukan' : 'Pengeluaran'}
                   </button>
@@ -509,45 +466,45 @@ export default function Dashboard({ user, onLogout }) {
 
               {/* Amount */}
               <div>
-                <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: C.inkMid, marginBottom: 6 }}>Jumlah</label>
+                <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: C.ink2, marginBottom: 4 }}>Jumlah</label>
                 <div style={{ position: 'relative' }}>
-                  <span className="font-ledger" style={{ position: 'absolute', left: 14, top: '50%', transform: 'translateY(-50%)', color: C.inkFaint, fontSize: 13, pointerEvents: 'none' }}>Rp</span>
+                  <span className="font-tab" style={{ position: 'absolute', left: 10, top: '50%', transform: 'translateY(-50%)', color: C.ink3, fontSize: 12, pointerEvents: 'none' }}>Rp</span>
                   <input type="number" required min="1" placeholder="0" value={fAmount} onChange={e => setFAmount(e.target.value)}
-                    style={{ ...inputStyle, paddingLeft: 38, fontFamily: 'var(--font-mono)', fontSize: 15, fontWeight: 700, color: fType === 'INCOME' ? C.greenMid : C.red }} />
+                    style={{ ...inputStyle, paddingLeft: 32, fontFamily: 'var(--font-mono)', fontSize: 14, fontWeight: 600, color: fType === 'INCOME' ? C.green : C.red }} />
                 </div>
               </div>
 
               {/* Category + Date */}
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }} className="modal-grid">
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }} className="modal-grid">
                 <div>
-                  <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: C.inkMid, marginBottom: 6 }}>Kategori</label>
+                  <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: C.ink2, marginBottom: 4 }}>Kategori</label>
                   <select value={fCategory} onChange={e => setFCategory(e.target.value)} style={{ ...inputStyle, cursor: 'pointer' }}>
                     {CATEGORIES[fType].map(c => <option key={c}>{c}</option>)}
                   </select>
                 </div>
                 <div>
-                  <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: C.inkMid, marginBottom: 6 }}>Tanggal</label>
-                  <input type="date" required value={fDate} onChange={e => setFDate(e.target.value)} style={{ ...inputStyle, fontFamily: 'var(--font-mono)', fontSize: 12 }} />
+                  <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: C.ink2, marginBottom: 4 }}>Tanggal</label>
+                  <input type="date" required value={fDate} onChange={e => setFDate(e.target.value)} style={{ ...inputStyle, fontFamily: 'var(--font-mono)', fontSize: 11 }} />
                 </div>
               </div>
 
               {/* Description */}
               <div>
-                <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: C.inkMid, marginBottom: 6 }}>Keterangan</label>
-                <input type="text" placeholder="Catatan singkat..." value={fDesc} onChange={e => setFDesc(e.target.value)} style={inputStyle} />
+                <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: C.ink2, marginBottom: 4 }}>Keterangan</label>
+                <input type="text" placeholder="Catatan..." value={fDesc} onChange={e => setFDesc(e.target.value)} style={inputStyle} />
               </div>
 
               {/* Actions */}
-              <div style={{ display: 'flex', gap: 10, marginTop: 4 }}>
-                <button type="button" onClick={() => setShowModal(false)} style={{ flex: 1, padding: '11px 0', borderRadius: 12, border: `1px solid ${C.rule}`, background: C.surface, color: C.inkMid, fontWeight: 600, fontSize: 13, cursor: 'pointer' }}>
+              <div style={{ display: 'flex', gap: 8, marginTop: 4 }}>
+                <button type="button" onClick={() => setShowModal(false)} style={{ flex: 1, padding: '9px 0', borderRadius: 'var(--radius-sm)', border: `1px solid ${C.border}`, background: C.surface, color: C.ink2, fontWeight: 600, fontSize: 13, cursor: 'pointer' }}>
                   Batal
                 </button>
                 <button type="submit" disabled={submitting} style={{
-                  flex: 2, padding: '11px 0', borderRadius: 12, border: 'none',
-                  background: submitting ? C.inkFaint : C.accent,
+                  flex: 2, padding: '9px 0', borderRadius: 'var(--radius-sm)', border: 'none',
+                  background: submitting ? C.ink3 : C.accent,
                   color: '#fff', fontWeight: 700, fontSize: 13,
                   cursor: submitting ? 'not-allowed' : 'pointer',
-                  opacity: submitting ? 0.6 : 1,
+                  opacity: submitting ? 0.5 : 1,
                 }}>
                   {submitting ? 'Menyimpan...' : editingTx ? 'Simpan' : 'Catat'}
                 </button>
@@ -560,24 +517,22 @@ export default function Dashboard({ user, onLogout }) {
   );
 }
 
-/* ── Input Style ── */
+/* ─── Input ─── */
 const inputStyle = {
-  width: '100%', padding: '10px 14px',
-  background: '#fff', border: `1px solid ${C.rule}`,
-  borderRadius: 10, fontSize: 13, color: C.ink,
-  outline: 'none', transition: 'border-color 0.15s',
+  width: '100%', padding: '8px 12px',
+  background: C.surface, border: `1px solid ${C.border}`,
+  borderRadius: 'var(--radius-sm)', fontSize: 13, color: C.ink,
+  outline: 'none', transition: 'border-color 0.12s',
   boxSizing: 'border-box',
 };
 
-/* ── Transaction Table ── */
+/* ─── Transaction Table ─── */
 function TransactionTable({ rows, onEdit, onDelete }) {
   if (!rows.length) return (
-    <div style={{ padding: '48px 24px', textAlign: 'center' }}>
-      <div style={{ width: 44, height: 44, borderRadius: 12, background: C.brandBg, display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 12px' }}>
-        <BookOpen size={18} color={C.accent} />
-      </div>
-      <p style={{ fontSize: 14, color: C.ink, fontWeight: 700, marginBottom: 4 }}>Belum ada transaksi</p>
-      <p style={{ fontSize: 12, color: C.inkFaint }}>Mulai catat transaksi pertama Anda.</p>
+    <div style={{ padding: '40px 20px', textAlign: 'center' }}>
+      <BookOpen size={20} color={C.ink3} style={{ marginBottom: 8 }} />
+      <p style={{ fontSize: 13, fontWeight: 600, color: C.ink, marginBottom: 2 }}>Belum ada transaksi</p>
+      <p style={{ fontSize: 12, color: C.ink3 }}>Mulai catat transaksi pertama Anda.</p>
     </div>
   );
 
@@ -586,9 +541,15 @@ function TransactionTable({ rows, onEdit, onDelete }) {
       {/* Desktop */}
       <table className="desktop-tx-table" style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
         <thead>
-          <tr style={{ background: C.surface2 }}>
+          <tr style={{ background: C.surfaceDim }}>
             {['Tanggal', 'Keterangan', 'Kategori', 'Jumlah', ''].map(h => (
-              <th key={h} style={{ padding: '12px 16px', textAlign: h === 'Jumlah' || h === '' ? 'right' : 'left', fontSize: 11, fontWeight: 700, color: C.inkFaint, whiteSpace: 'nowrap', borderBottom: `1px solid ${C.rule}`, textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+              <th key={h} style={{
+                padding: '10px 14px',
+                textAlign: h === 'Jumlah' || h === '' ? 'right' : 'left',
+                fontSize: 11, fontWeight: 600, color: C.ink3,
+                textTransform: 'uppercase', letterSpacing: '0.04em',
+                borderBottom: `1px solid ${C.border}`, whiteSpace: 'nowrap',
+              }}>
                 {h}
               </th>
             ))}
@@ -596,51 +557,50 @@ function TransactionTable({ rows, onEdit, onDelete }) {
         </thead>
         <tbody>
           {rows.map((tx) => (
-            <tr key={tx.id} style={{ borderTop: `1px solid ${C.ruleSoft}` }}
-              onMouseEnter={e => e.currentTarget.style.background = C.surface2}
+            <tr key={tx.id} style={{ borderBottom: `1px solid ${C.border}` }}
+              onMouseEnter={e => e.currentTarget.style.background = C.surfaceDim}
               onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
 
-              <td style={{ padding: '12px 16px', whiteSpace: 'nowrap' }}>
-                <span style={{ fontFamily: 'var(--font-mono)', fontSize: 12, color: C.inkSoft }}>
+              <td style={{ padding: '10px 14px', whiteSpace: 'nowrap' }}>
+                <span className="font-tab" style={{ fontSize: 11, color: C.ink3 }}>
                   {new Date(tx.date).toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' })}
                 </span>
               </td>
 
-              <td style={{ padding: '12px 16px', maxWidth: 200 }}>
-                <span style={{ fontSize: 13, fontWeight: 600, color: C.ink, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', display: 'block' }}>
-                  {tx.description || <span style={{ color: C.inkSoft, fontWeight: 400, fontStyle: 'italic' }}>Tanpa keterangan</span>}
+              <td style={{ padding: '10px 14px', maxWidth: 180 }}>
+                <span style={{ fontWeight: 600, color: C.ink, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', display: 'block' }}>
+                  {tx.description || <span style={{ color: C.ink3, fontWeight: 400, fontStyle: 'italic' }}>Tanpa keterangan</span>}
                 </span>
               </td>
 
-              <td style={{ padding: '12px 16px', whiteSpace: 'nowrap' }}>
+              <td style={{ padding: '10px 14px', whiteSpace: 'nowrap' }}>
                 <span style={{
-                  display: 'inline-flex', alignItems: 'center', gap: 5, padding: '4px 10px',
-                  background: tx.type === 'INCOME' ? C.greenBg : C.redBg,
-                  color: tx.type === 'INCOME' ? C.greenMid : C.red,
-                  borderRadius: 99, fontSize: 11, fontWeight: 700,
+                  display: 'inline-flex', alignItems: 'center', gap: 4, padding: '3px 8px',
+                  background: tx.type === 'INCOME' ? C.greenSoft : C.redSoft,
+                  color: tx.type === 'INCOME' ? C.green : C.red,
+                  borderRadius: 4, fontSize: 11, fontWeight: 600,
                 }}>
-                  <span style={{ width: 5, height: 5, borderRadius: 99, background: tx.type === 'INCOME' ? C.green : C.red }} />
                   {tx.category}
                 </span>
               </td>
 
-              <td style={{ padding: '12px 16px', textAlign: 'right', whiteSpace: 'nowrap' }}>
-                <span className="font-ledger" style={{ fontSize: 13, fontWeight: 700, color: tx.type === 'INCOME' ? C.greenMid : C.red }}>
+              <td style={{ padding: '10px 14px', textAlign: 'right', whiteSpace: 'nowrap' }}>
+                <span className="font-tab" style={{ fontSize: 13, fontWeight: 600, color: tx.type === 'INCOME' ? C.green : C.red }}>
                   {tx.type === 'INCOME' ? '+' : '-'}{formatIDR(tx.amount)}
                 </span>
               </td>
 
-              <td style={{ padding: '12px 16px', textAlign: 'right', whiteSpace: 'nowrap' }}>
-                <div style={{ display: 'flex', gap: 6, justifyContent: 'flex-end' }}>
-                  <button onClick={() => onEdit(tx)} title="Edit" style={{ background: 'none', border: `1px solid ${C.rule}`, cursor: 'pointer', color: C.inkFaint, padding: 6, borderRadius: 8, transition: 'all 0.15s' }}
-                    onMouseEnter={e => { e.currentTarget.style.color = C.accent; e.currentTarget.style.borderColor = '#c7d2fe'; }}
-                    onMouseLeave={e => { e.currentTarget.style.color = C.inkFaint; e.currentTarget.style.borderColor = C.rule; }}>
-                    <Edit2 size={13} />
+              <td style={{ padding: '10px 14px', textAlign: 'right', whiteSpace: 'nowrap' }}>
+                <div style={{ display: 'flex', gap: 4, justifyContent: 'flex-end' }}>
+                  <button onClick={() => onEdit(tx)} title="Edit" style={{ background: 'none', border: `1px solid ${C.border}`, cursor: 'pointer', color: C.ink3, padding: 5, borderRadius: 6, transition: 'color 0.12s' }}
+                    onMouseEnter={e => { e.currentTarget.style.color = C.accent; e.currentTarget.style.borderColor = C.accent; }}
+                    onMouseLeave={e => { e.currentTarget.style.color = C.ink3; e.currentTarget.style.borderColor = C.border; }}>
+                    <Edit2 size={12} />
                   </button>
-                  <button onClick={() => onDelete(tx.id)} title="Hapus" style={{ background: 'none', border: `1px solid ${C.rule}`, cursor: 'pointer', color: C.inkFaint, padding: 6, borderRadius: 8, transition: 'all 0.15s' }}
-                    onMouseEnter={e => { e.currentTarget.style.color = C.red; e.currentTarget.style.borderColor = '#fecdd3'; }}
-                    onMouseLeave={e => { e.currentTarget.style.color = C.inkFaint; e.currentTarget.style.borderColor = C.rule; }}>
-                    <Trash2 size={13} />
+                  <button onClick={() => onDelete(tx.id)} title="Hapus" style={{ background: 'none', border: `1px solid ${C.border}`, cursor: 'pointer', color: C.ink3, padding: 5, borderRadius: 6, transition: 'color 0.12s' }}
+                    onMouseEnter={e => { e.currentTarget.style.color = C.red; e.currentTarget.style.borderColor = C.red; }}
+                    onMouseLeave={e => { e.currentTarget.style.color = C.ink3; e.currentTarget.style.borderColor = C.border; }}>
+                    <Trash2 size={12} />
                   </button>
                 </div>
               </td>
@@ -652,18 +612,16 @@ function TransactionTable({ rows, onEdit, onDelete }) {
       {/* Mobile Cards */}
       <div className="mobile-tx-list">
         {rows.map((tx) => (
-          <div key={tx.id} style={{
-            padding: '14px 16px', borderBottom: `1px solid ${C.ruleSoft}`,
-          }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 12, minWidth: 0 }}>
+          <div key={tx.id} style={{ padding: '12px 16px', borderBottom: `1px solid ${C.border}` }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10, minWidth: 0 }}>
               <div style={{
-                width: 36, height: 36, borderRadius: 10, flexShrink: 0,
+                width: 32, height: 32, borderRadius: 8, flexShrink: 0,
                 display: 'grid', placeItems: 'center',
-                background: tx.type === 'INCOME' ? C.greenBg : C.redBg,
+                background: tx.type === 'INCOME' ? C.greenSoft : C.redSoft,
               }}>
                 {tx.type === 'INCOME'
-                  ? <ArrowUpRight size={16} color={C.green} strokeWidth={2.5} />
-                  : <ArrowDownRight size={16} color={C.red} strokeWidth={2.5} />
+                  ? <ArrowUpRight size={14} color={C.green} strokeWidth={2.5} />
+                  : <ArrowDownRight size={14} color={C.red} strokeWidth={2.5} />
                 }
               </div>
 
@@ -671,30 +629,30 @@ function TransactionTable({ rows, onEdit, onDelete }) {
                 <div style={{ fontSize: 13, fontWeight: 600, color: C.ink, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                   {tx.description || 'Tanpa keterangan'}
                 </div>
-                <div style={{ fontSize: 11, color: C.inkSoft, marginTop: 2, fontFamily: 'var(--font-mono)' }}>
-                  {new Date(tx.date).toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' })} &middot; {tx.category}
+                <div style={{ fontSize: 11, color: C.ink3, marginTop: 1, fontFamily: 'var(--font-mono)' }}>
+                  {new Date(tx.date).toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' })} · {tx.category}
                 </div>
               </div>
 
-              <div className="font-ledger" style={{ fontSize: 13, fontWeight: 700, color: tx.type === 'INCOME' ? C.greenMid : C.red, whiteSpace: 'nowrap', flexShrink: 0 }}>
+              <div className="font-tab" style={{ fontSize: 13, fontWeight: 600, color: tx.type === 'INCOME' ? C.green : C.red, whiteSpace: 'nowrap', flexShrink: 0 }}>
                 {tx.type === 'INCOME' ? '+' : '-'}{formatIDR(tx.amount)}
               </div>
             </div>
 
-            <div style={{ display: 'flex', gap: 8, marginTop: 10, paddingLeft: 48 }}>
+            <div style={{ display: 'flex', gap: 6, marginTop: 8, paddingLeft: 42 }}>
               <button onClick={() => onEdit(tx)} style={{
-                flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 4,
-                padding: '7px 0', borderRadius: 8, border: `1px solid ${C.rule}`,
-                background: '#fff', color: C.inkFaint, fontSize: 11, fontWeight: 600, cursor: 'pointer',
+                flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 3,
+                padding: '6px 0', borderRadius: 6, border: `1px solid ${C.border}`,
+                background: C.surface, color: C.ink3, fontSize: 11, fontWeight: 600, cursor: 'pointer',
               }}>
-                <Edit2 size={11} /> Edit
+                <Edit2 size={10} /> Edit
               </button>
               <button onClick={() => onDelete(tx.id)} style={{
-                flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 4,
-                padding: '7px 0', borderRadius: 8, border: `1px solid ${C.rule}`,
-                background: '#fff', color: C.inkFaint, fontSize: 11, fontWeight: 600, cursor: 'pointer',
+                flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 3,
+                padding: '6px 0', borderRadius: 6, border: `1px solid ${C.border}`,
+                background: C.surface, color: C.ink3, fontSize: 11, fontWeight: 600, cursor: 'pointer',
               }}>
-                <Trash2 size={11} /> Hapus
+                <Trash2 size={10} /> Hapus
               </button>
             </div>
           </div>
