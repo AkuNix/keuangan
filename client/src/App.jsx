@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
 import { api } from './api';
+import { motion } from 'framer-motion';
 
 function App() {
   const [user, setUser] = useState(null);
@@ -36,20 +37,27 @@ function App() {
 
   if (loading) {
     return (
-      <div style={{
-        minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center',
-        background: 'linear-gradient(180deg, #ffffff 0%, #f8fafc 100%)', fontFamily: 'var(--font-sans)',
-      }}>
-        <div style={{ textAlign: 'center' }}>
-          <div style={{
-            width: 42, height: 42, border: '3px solid #e2e8f0',
-            borderTopColor: '#4f46e5', borderRadius: '50%',
-            animation: 'spin 0.8s linear infinite', margin: '0 auto',
-          }} />
-          <p style={{ color: '#64748b', marginTop: 16, fontSize: 13, fontWeight: 600 }}>Memuat aplikasi...</p>
-          <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
+      <motion.div
+        className="min-h-screen flex items-center justify-center bg-slate-50"
+        initial={false}
+        animate={{ opacity: 1 }}
+      >
+        <div className="text-center">
+          <motion.div
+            className="w-12 h-12 border-4 border-slate-200 border-t-indigo-600 rounded-full mx-auto"
+            animate={{ rotate: 360 }}
+            transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
+          />
+          <motion.p
+            className="mt-4 text-sm font-semibold text-slate-600"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.2 }}
+          >
+            Memuat aplikasi...
+          </motion.p>
         </div>
-      </div>
+      </motion.div>
     );
   }
 
