@@ -1,6 +1,4 @@
 import { useState } from 'react';
-import { motion } from 'framer-motion';
-import { fadeIn } from '@/lib/animations';
 import { Sidebar } from './Sidebar';
 import { Topbar } from './Topbar';
 
@@ -18,7 +16,7 @@ export function PageShell({ children, user, onLogout, activeView, onNavigate, pa
         onLogout={onLogout}
       />
 
-      <div className="flex-1 flex flex-col min-w-0 lg:ml-0">
+      <div className="flex-1 flex flex-col min-w-0">
         <Topbar
           onMenuClick={() => setSidebarOpen(true)}
           user={user}
@@ -27,14 +25,9 @@ export function PageShell({ children, user, onLogout, activeView, onNavigate, pa
         />
 
         <main className="flex-1 overflow-auto">
-          <motion.div
-            className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8"
-            initial={false}
-            animate={{ opacity: 1, y: 0 }}
-            transition={fadeIn.transition}
-          >
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
             {children}
-          </motion.div>
+          </div>
         </main>
       </div>
     </div>
