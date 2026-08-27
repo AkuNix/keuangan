@@ -8,12 +8,13 @@ generator client {
 }
 
 model User {
-  id           Int           @id @default(autoincrement())
-  name         String
-  email        String        @unique
-  password     String
-  createdAt    DateTime      @default(now())
-  transactions Transaction[]
+  id            Int            @id @default(autoincrement())
+  name          String
+  email         String         @unique
+  password      String
+  createdAt     DateTime       @default(now())
+  transactions  Transaction[]
+  savingGoals   SavingGoal[]
 }
 
 model Transaction {
@@ -31,4 +32,28 @@ model Transaction {
   @@index([type])
   @@index([date])
   @@index([userId, type])
+}
+
+model SavingGoal {
+  id           Int              @id @default(autoincrement())
+  userId       Int
+  user         User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name         String
+  targetAmount Float
+  deadline     DateTime?
+  createdAt    DateTime         @default(now())
+  deposits     SavingDeposit[]
+
+  @@index([userId])
+}
+
+model SavingDeposit {
+  id       Int        @id @default(autoincrement())
+  goalId   Int
+  goal     SavingGoal @relation(fields: [goalId], references: [id], onDelete: Cascade)
+  amount   Float
+  note     String?
+  date     DateTime   @default(now())
+
+  @@index([goalId])
 }

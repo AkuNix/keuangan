@@ -1,6 +1,6 @@
 import { useRef, useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, LineChart, Line, Area, AreaChart } from 'recharts';
 import { formatIDR, formatShort, CAT_COLORS } from '@/lib/utils';
 import { Card } from '@/components/ui';
 
@@ -23,6 +23,24 @@ function CustomTooltip({ active, payload, label }) {
   );
 }
 
+function SavingsTooltip({ active, payload, label }) {
+  if (!active || !payload?.length) return null;
+  return (
+    <motion.div className="bg-slate-900 text-white rounded-lg shadow-lg p-3 min-w-[160px] border border-slate-800" initial={false} animate={{ opacity: 1, y: 0, scale: 1 }} transition={{ duration: 0.15 }}>
+      <p className="text-xs font-medium text-slate-400 mb-2 capitalize">{label}</p>
+      {payload.map((p, i) => (
+        <motion.div key={p.dataKey} className="flex items-center justify-between gap-3 py-1" initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: i * 0.05, duration: 0.2 }}>
+          <span className="flex items-center gap-2 text-sm">
+            <span className="w-2 h-2 rounded" style={{ backgroundColor: p.color }} />
+            {p.name}
+          </span>
+          <span className="font-mono font-semibold tabular-nums text-right">{formatIDR(p.value)}</span>
+        </motion.div>
+      ))}
+    </motion.div>
+  );
+}
+
 function PieTooltip({ active, payload }) {
   if (!active || !payload?.length) return null;
   const item = payload[0];
@@ -31,6 +49,17 @@ function PieTooltip({ active, payload }) {
       <p className="font-medium text-sm mb-1">{item.name}</p>
       <p className="font-mono font-bold text-lg tabular-nums">{formatIDR(item.value)}</p>
       <p className="text-xs text-slate-400 mt-1">{(item.percent * 100).toFixed(1)}% dari total</p>
+    </motion.div>
+  );
+}
+
+function HorizontalBarTooltip({ active, payload }) {
+  if (!active || !payload?.length) return null;
+  const item = payload[0];
+  return (
+    <motion.div className="bg-slate-900 text-white rounded-lg shadow-lg p-3 min-w-[160px] border border-slate-800" initial={false} animate={{ opacity: 1, y: 0, scale: 1 }} transition={{ duration: 0.15 }}>
+      <p className="font-medium text-sm mb-1">{item.payload?.name || item.name}</p>
+      <p className="font-mono font-bold text-lg tabular-nums">{formatIDR(item.value)}</p>
     </motion.div>
   );
 }
@@ -142,13 +171,133 @@ export function PieChartCard({ data, total, animate = true, title = 'Per Kategor
   );
 }
 
+export function SavingsTrendChart({ data, animate = true }) {
+  const containerRef = useRef(null);
+  const [hasAnimated, setHasAnimated] = useState(false);
+
+  useEffect(() => {
+    if (!animate || hasAnimated) return;
+    const observer = new IntersectionObserver(([entry]) => { if (entry.isIntersecting) { setHasAnimated(true); observer.disconnect(); } }, { threshold: 0.3 });
+    if (containerRef.current) observer.observe(containerRef.current);
+    return () => observer.disconnect();
+  }, [animate, hasAnimated]);
+
+  if (!data.length) {
+    return (
+      <Card className="h-[320px] flex items-center justify-center">
+        <div className="text-center text-slate-500 dark:text-slate-400">
+          <svg className="w-12 h-12 mx-auto mb-3 text-slate-300 dark:text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" /></svg>
+          <p className="font-medium">Belum ada data</p>
+          <p className="text-sm mt-1">Data akan muncul setelah ada transaksi</p>
+        </div>
+      </Card>
+    );
+  }
+
+  return (
+    <Card ref={containerRef} className="h-[360px]">
+      <div className="mb-6"><h3 className="font-bold text-slate-900 dark:text-white">Tren Tabungan per Bulan</h3></div>
+      <div className="h-[280px]">
+        <ResponsiveContainer width="100%" height="100%">
+          <AreaChart data={data} margin={{ top: 4, right: 4, left: 0, bottom: 0 }}>
+            <defs>
+              <linearGradient id="incomeGrad" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="5%" stopColor="#16a34a" stopOpacity={0.15} />
+                <stop offset="95%" stopColor="#16a34a" stopOpacity={0} />
+              </linearGradient>
+              <linearGradient id="expenseGrad" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="5%" stopColor="#dc2626" stopOpacity={0.15} />
+                <stop offset="95%" stopColor="#dc2626" stopOpacity={0} />
+              </linearGradient>
+            </defs>
+            <CartesianGrid strokeDasharray="4 4" stroke="#f1f5f9" vertical={false} />
+            <XAxis dataKey="month" tick={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 11, fill: '#94a3b8' }} tickLine={false} axisLine={false} axisTick={false} />
+            <YAxis tick={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 11, fill: '#94a3b8' }} tickLine={false} axisLine={false} tickFormatter={formatShort} tickCount={5} />
+            <Tooltip content={<SavingsTooltip />} />
+            <Area type="monotone" dataKey="income" name="Pemasukan" stroke="#16a34a" strokeWidth={2} fill="url(#incomeGrad)" dot={false} isAnimationActive={hasAnimated} animationDuration={800} />
+            <Area type="monotone" dataKey="expense" name="Pengeluaran" stroke="#dc2626" strokeWidth={2} fill="url(#expenseGrad)" dot={false} isAnimationActive={hasAnimated} animationDuration={800} />
+          </AreaChart>
+        </ResponsiveContainer>
+      </div>
+      <div className="flex items-center gap-4 mt-4">
+        {[{ label: 'Pemasukan', color: '#16a34a' }, { label: 'Pengeluaran', color: '#dc2626' }].map((item) => (
+          <motion.span key={item.label} className="flex items-center gap-2 text-sm font-medium text-slate-600 dark:text-slate-400" initial={false} animate={{ opacity: 1, x: 0 }} transition={{ delay: hasAnimated ? 0.6 : 0, duration: 0.3 }}>
+            <motion.div className="w-3 h-3 rounded" style={{ backgroundColor: item.color }} initial={false} animate={{ scale: [0, 1] }} transition={{ delay: hasAnimated ? 0.7 : 0, type: 'spring', stiffness: 200 }} />
+            {item.label}
+          </motion.span>
+        ))}
+      </div>
+    </Card>
+  );
+}
+
+export function TopCategoriesChart({ data, animate = true }) {
+  const containerRef = useRef(null);
+  const [hasAnimated, setHasAnimated] = useState(false);
+
+  useEffect(() => {
+    if (!animate || hasAnimated) return;
+    const observer = new IntersectionObserver(([entry]) => { if (entry.isIntersecting) { setHasAnimated(true); observer.disconnect(); } }, { threshold: 0.3 });
+    if (containerRef.current) observer.observe(containerRef.current);
+    return () => observer.disconnect();
+  }, [animate, hasAnimated]);
+
+  const top5 = data.slice(0, 5);
+  const maxVal = top5.length > 0 ? Math.max(...top5.map(d => d.value)) : 1;
+
+  if (!top5.length) {
+    return (
+      <Card className="h-[320px] flex items-center justify-center">
+        <div className="text-center text-slate-500 dark:text-slate-400">
+          <svg className="w-12 h-12 mx-auto mb-3 text-slate-300 dark:text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 6h16M4 12h16M4 18h7" /></svg>
+          <p className="font-medium">Belum ada data</p>
+          <p className="text-sm mt-1">Top kategori akan muncul di sini</p>
+        </div>
+      </Card>
+    );
+  }
+
+  return (
+    <Card ref={containerRef} className="h-[360px]">
+      <div className="mb-6"><h3 className="font-bold text-slate-900 dark:text-white">Top 5 Pengeluaran Terbesar</h3></div>
+      <div className="space-y-4 px-2">
+        {top5.map((item, i) => {
+          const pct = maxVal > 0 ? (item.value / maxVal) * 100 : 0;
+          return (
+            <motion.div key={item.name} className="flex items-center gap-3" initial={animate ? { opacity: 0, x: -20 } : false} animate={animate ? { opacity: 1, x: 0 } : false} transition={{ delay: i * 0.1, duration: 0.4, ease: [0.25, 0.46, 0.45, 0.94] }}>
+              <div className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0" style={{ backgroundColor: CAT_COLORS[i % CAT_COLORS.length] + '20' }}>
+                <span className="font-mono font-bold text-xs" style={{ color: CAT_COLORS[i % CAT_COLORS.length] }}>{i + 1}</span>
+              </div>
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center justify-between mb-1.5">
+                  <span className="text-sm font-semibold text-slate-700 dark:text-slate-300 truncate">{item.name}</span>
+                  <span className="font-mono font-bold text-sm text-slate-900 dark:text-white tabular-nums ml-2">{formatIDR(item.value)}</span>
+                </div>
+                <div className="h-2 bg-slate-100 dark:bg-slate-700 rounded-full overflow-hidden">
+                  <motion.div className="h-full rounded-full" style={{ backgroundColor: CAT_COLORS[i % CAT_COLORS.length] }} initial={{ width: 0 }} animate={{ width: `${pct}%` }} transition={{ duration: 0.8, delay: i * 0.1, ease: [0.25, 0.46, 0.45, 0.94] }} />
+                </div>
+              </div>
+            </motion.div>
+          );
+        })}
+      </div>
+    </Card>
+  );
+}
+
 export function ChartsArea({ stats, animate = true }) {
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-4" role="region" aria-label="Grafik keuangan">
       <motion.div className="lg:col-span-2" initial={animate ? { opacity: 0, y: 20 } : false} animate={animate ? { opacity: 1, y: 0 } : false} transition={{ duration: 0.4, delay: 0.1 }}>
-        <BarChartCard data={stats.monthlyTrend} animate={animate} />
+        <SavingsTrendChart data={stats.monthlyTrend} animate={animate} />
       </motion.div>
       <motion.div initial={animate ? { opacity: 0, y: 20 } : false} animate={animate ? { opacity: 1, y: 0 } : false} transition={{ duration: 0.4, delay: 0.2 }}>
+        <TopCategoriesChart data={stats.categoryBreakdown} animate={animate} />
+      </motion.div>
+      <motion.div className="lg:col-span-2" initial={animate ? { opacity: 0, y: 20 } : false} animate={animate ? { opacity: 1, y: 0 } : false} transition={{ duration: 0.4, delay: 0.15 }}>
+        <BarChartCard data={stats.monthlyTrend} animate={animate} />
+      </motion.div>
+      <motion.div initial={animate ? { opacity: 0, y: 20 } : false} animate={animate ? { opacity: 1, y: 0 } : false} transition={{ duration: 0.4, delay: 0.25 }}>
         <PieChartCard data={stats.categoryBreakdown} total={stats.totalExpense} animate={animate} />
       </motion.div>
     </div>

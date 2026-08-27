@@ -208,6 +208,147 @@ app.get('/api/dashboard/stats', authenticateToken, async (req, res) => {
   }
 });
 
+// Profile Routes
+app.put('/api/auth/profile', authenticateToken, async (req, res) => {
+  const { name } = req.body;
+  if (!name || !name.trim()) {
+    return res.status(400).json({ error: 'Name is required' });
+  }
+  try {
+    const updated = await prisma.user.update({
+      where: { id: req.user.id },
+      data: { name: name.trim() }
+    });
+    res.json({ id: updated.id, name: updated.name, email: updated.email });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.put('/api/auth/password', authenticateToken, async (req, res) => {
+  const { currentPassword, newPassword } = req.body;
+  if (!currentPassword || !newPassword) {
+    return res.status(400).json({ error: 'Current password and new password are required' });
+  }
+  if (newPassword.length < 6) {
+    return res.status(400).json({ error: 'New password must be at least 6 characters' });
+  }
+  try {
+    const user = await prisma.user.findUnique({ where: { id: req.user.id } });
+    if (!(await bcrypt.compare(currentPassword, user.password))) {
+      return res.status(400).json({ error: 'Password lama salah' });
+    }
+    const hashed = await bcrypt.hash(newPassword, 10);
+    await prisma.user.update({ where: { id: req.user.id }, data: { password: hashed } });
+    res.json({ message: 'Password berhasil diubah' });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Savings Routes
+app.get('/api/savings', authenticateToken, async (req, res) => {
+  try {
+    const goals = await prisma.savingGoal.findMany({
+      where: { userId: req.user.id },
+      include: { deposits: { orderBy: { date: 'desc' } } },
+      orderBy: { createdAt: 'desc' }
+    });
+    const result = goals.map(g => ({
+      ...g,
+      totalSaved: g.deposits.reduce((sum, d) => sum + d.amount, 0)
+    }));
+    res.json(result);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.post('/api/savings', authenticateToken, async (req, res) => {
+  const { name, targetAmount, deadline } = req.body;
+  if (!name || !targetAmount) {
+    return res.status(400).json({ error: 'Name and target amount are required' });
+  }
+  try {
+    const goal = await prisma.savingGoal.create({
+      data: {
+        userId: req.user.id,
+        name: name.trim(),
+        targetAmount: parseFloat(targetAmount),
+        deadline: deadline ? new Date(deadline) : null
+      }
+    });
+    res.status(201).json({ ...goal, totalSaved: 0, deposits: [] });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.put('/api/savings/:id', authenticateToken, async (req, res) => {
+  const { id } = req.params;
+  const { name, targetAmount, deadline } = req.body;
+  try {
+    const existing = await prisma.savingGoal.findUnique({ where: { id: parseInt(id) } });
+    if (!existing || existing.userId !== req.user.id) {
+      return res.status(404).json({ error: 'Saving goal not found' });
+    }
+    const updated = await prisma.savingGoal.update({
+      where: { id: parseInt(id) },
+      data: {
+        name: name !== undefined ? name.trim() : existing.name,
+        targetAmount: targetAmount !== undefined ? parseFloat(targetAmount) : existing.targetAmount,
+        deadline: deadline !== undefined ? (deadline ? new Date(deadline) : null) : existing.deadline
+      }
+    });
+    const deposits = await prisma.savingDeposit.findMany({ where: { goalId: updated.id } });
+    res.json({ ...updated, totalSaved: deposits.reduce((sum, d) => sum + d.amount, 0), deposits });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.delete('/api/savings/:id', authenticateToken, async (req, res) => {
+  const { id } = req.params;
+  try {
+    const existing = await prisma.savingGoal.findUnique({ where: { id: parseInt(id) } });
+    if (!existing || existing.userId !== req.user.id) {
+      return res.status(404).json({ error: 'Saving goal not found' });
+    }
+    await prisma.savingGoal.delete({ where: { id: parseInt(id) } });
+    res.json({ message: 'Saving goal deleted' });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.post('/api/savings/:id/deposit', authenticateToken, async (req, res) => {
+  const { id } = req.params;
+  const { amount, note } = req.body;
+  if (!amount || parseFloat(amount) <= 0) {
+    return res.status(400).json({ error: 'Amount must be positive' });
+  }
+  try {
+    const existing = await prisma.savingGoal.findUnique({ where: { id: parseInt(id) } });
+    if (!existing || existing.userId !== req.user.id) {
+      return res.status(404).json({ error: 'Saving goal not found' });
+    }
+    const deposit = await prisma.savingDeposit.create({
+      data: {
+        goalId: parseInt(id),
+        amount: parseFloat(amount),
+        note: note || null
+      }
+    });
+    const deposits = await prisma.savingDeposit.findMany({ where: { goalId: parseInt(id) } });
+    res.status(201).json({
+      deposit,
+      totalSaved: deposits.reduce((sum, d) => sum + d.amount, 0)
+    });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
 });

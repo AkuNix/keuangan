@@ -309,5 +309,188 @@ app.get('/api/dashboard/stats', authenticateToken, async (req, res) => {
   }
 });
 
+// Profile Routes
+app.put('/api/auth/profile', authenticateToken, async (req, res) => {
+  const { name } = req.body;
+  if (!name || !name.trim()) {
+    return res.status(400).json({ error: 'Nama wajib diisi' });
+  }
+  const cleanName = sanitize(name);
+  if (cleanName.length < 2) {
+    return res.status(400).json({ error: 'Nama minimal 2 karakter' });
+  }
+  try {
+    const updated = await prisma.user.update({
+      where: { id: req.user.id },
+      data: { name: cleanName }
+    });
+    res.json({ id: updated.id, name: updated.name, email: updated.email });
+  } catch (err) {
+    res.status(500).json({ error: 'Terjadi kesalahan server' });
+  }
+});
+
+app.put('/api/auth/password', authenticateToken, async (req, res) => {
+  const { currentPassword, newPassword } = req.body;
+  if (!currentPassword || !newPassword) {
+    return res.status(400).json({ error: 'Password lama dan baru wajib diisi' });
+  }
+  if (typeof newPassword !== 'string' || newPassword.length < 6) {
+    return res.status(400).json({ error: 'Password baru minimal 6 karakter' });
+  }
+  if (newPassword.length > 128) {
+    return res.status(400).json({ error: 'Password baru maksimal 128 karakter' });
+  }
+  try {
+    const user = await prisma.user.findUnique({ where: { id: req.user.id } });
+    if (!(await bcrypt.compare(currentPassword, user.password))) {
+      return res.status(400).json({ error: 'Password lama salah' });
+    }
+    const hashed = await bcrypt.hash(newPassword, 10);
+    await prisma.user.update({ where: { id: req.user.id }, data: { password: hashed } });
+    res.json({ message: 'Password berhasil diubah' });
+  } catch (err) {
+    res.status(500).json({ error: 'Terjadi kesalahan server' });
+  }
+});
+
+// Savings Routes
+app.get('/api/savings', authenticateToken, async (req, res) => {
+  try {
+    const goals = await prisma.savingGoal.findMany({
+      where: { userId: req.user.id },
+      include: { deposits: { orderBy: { date: 'desc' } } },
+      orderBy: { createdAt: 'desc' }
+    });
+    const result = goals.map(g => ({
+      ...g,
+      totalSaved: g.deposits.reduce((sum, d) => sum + d.amount, 0)
+    }));
+    res.json(result);
+  } catch (err) {
+    res.status(500).json({ error: 'Terjadi kesalahan server' });
+  }
+});
+
+app.post('/api/savings', authenticateToken, async (req, res) => {
+  const { name, targetAmount, deadline } = req.body;
+  if (!name || !targetAmount) {
+    return res.status(400).json({ error: 'Nama dan target wajib diisi' });
+  }
+  const cleanName = sanitize(name);
+  const parsedTarget = parseFloat(targetAmount);
+  if (cleanName.length < 1 || cleanName.length > 200) {
+    return res.status(400).json({ error: 'Nama goal tidak valid' });
+  }
+  if (isNaN(parsedTarget) || parsedTarget <= 0) {
+    return res.status(400).json({ error: 'Target harus lebih dari 0' });
+  }
+  try {
+    const goal = await prisma.savingGoal.create({
+      data: {
+        userId: req.user.id,
+        name: cleanName,
+        targetAmount: parsedTarget,
+        deadline: deadline ? new Date(deadline) : null
+      }
+    });
+    res.status(201).json({ ...goal, totalSaved: 0, deposits: [] });
+  } catch (err) {
+    res.status(500).json({ error: 'Terjadi kesalahan server' });
+  }
+});
+
+app.put('/api/savings/:id', authenticateToken, async (req, res) => {
+  const { id } = req.params;
+  const { name, targetAmount, deadline } = req.body;
+  const goalId = parseInt(id);
+  if (isNaN(goalId)) {
+    return res.status(400).json({ error: 'ID tidak valid' });
+  }
+  try {
+    const existing = await prisma.savingGoal.findUnique({ where: { id: goalId } });
+    if (!existing || existing.userId !== req.user.id) {
+      return res.status(404).json({ error: 'Goal tidak ditemukan' });
+    }
+    const updateData = {};
+    if (name !== undefined) {
+      const clean = sanitize(name);
+      if (clean.length < 1 || clean.length > 200) {
+        return res.status(400).json({ error: 'Nama goal tidak valid' });
+      }
+      updateData.name = clean;
+    }
+    if (targetAmount !== undefined) {
+      const parsed = parseFloat(targetAmount);
+      if (isNaN(parsed) || parsed <= 0) {
+        return res.status(400).json({ error: 'Target harus lebih dari 0' });
+      }
+      updateData.targetAmount = parsed;
+    }
+    if (deadline !== undefined) {
+      updateData.deadline = deadline ? new Date(deadline) : null;
+    }
+    const updated = await prisma.savingGoal.update({ where: { id: goalId }, data: updateData });
+    const deposits = await prisma.savingDeposit.findMany({ where: { goalId } });
+    res.json({ ...updated, totalSaved: deposits.reduce((sum, d) => sum + d.amount, 0), deposits });
+  } catch (err) {
+    res.status(500).json({ error: 'Terjadi kesalahan server' });
+  }
+});
+
+app.delete('/api/savings/:id', authenticateToken, async (req, res) => {
+  const { id } = req.params;
+  const goalId = parseInt(id);
+  if (isNaN(goalId)) {
+    return res.status(400).json({ error: 'ID tidak valid' });
+  }
+  try {
+    const existing = await prisma.savingGoal.findUnique({ where: { id: goalId } });
+    if (!existing || existing.userId !== req.user.id) {
+      return res.status(404).json({ error: 'Goal tidak ditemukan' });
+    }
+    await prisma.savingGoal.delete({ where: { id: goalId } });
+    res.json({ message: 'Goal berhasil dihapus' });
+  } catch (err) {
+    res.status(500).json({ error: 'Terjadi kesalahan server' });
+  }
+});
+
+app.post('/api/savings/:id/deposit', authenticateToken, async (req, res) => {
+  const { id } = req.params;
+  const { amount, note } = req.body;
+  const goalId = parseInt(id);
+  if (isNaN(goalId)) {
+    return res.status(400).json({ error: 'ID tidak valid' });
+  }
+  const parsedAmount = parseFloat(amount);
+  if (isNaN(parsedAmount) || parsedAmount <= 0) {
+    return res.status(400).json({ error: 'Jumlah harus lebih dari 0' });
+  }
+  if (parsedAmount > 999999999999) {
+    return res.status(400).json({ error: 'Jumlah terlalu besar' });
+  }
+  try {
+    const existing = await prisma.savingGoal.findUnique({ where: { id: goalId } });
+    if (!existing || existing.userId !== req.user.id) {
+      return res.status(404).json({ error: 'Goal tidak ditemukan' });
+    }
+    const deposit = await prisma.savingDeposit.create({
+      data: {
+        goalId,
+        amount: parsedAmount,
+        note: sanitize(note) || null
+      }
+    });
+    const deposits = await prisma.savingDeposit.findMany({ where: { goalId } });
+    res.status(201).json({
+      deposit,
+      totalSaved: deposits.reduce((sum, d) => sum + d.amount, 0)
+    });
+  } catch (err) {
+    res.status(500).json({ error: 'Terjadi kesalahan server' });
+  }
+});
+
 module.exports = app;
 module.exports.handler = serverless(app);

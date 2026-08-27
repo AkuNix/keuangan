@@ -1,15 +1,21 @@
 import { motion, AnimatePresence } from 'framer-motion';
 import { Fragment } from 'react';
 import { cn } from '@/lib/utils';
-import { LayoutDashboard, List, LogOut, BookOpen, User, Settings } from 'lucide-react';
+import { LayoutDashboard, List, LogOut, BookOpen, User, Settings, PiggyBank } from 'lucide-react';
 import { getInitials } from '@/lib/utils';
 
 const NAV_ITEMS = [
   { id: 'dashboard', icon: LayoutDashboard, label: 'Dashboard' },
   { id: 'ledger', icon: List, label: 'Buku Kas' },
+  { id: 'savings', icon: PiggyBank, label: 'Tabungan' },
 ];
 
-function SidebarContent({ activeView, onNavigate, onClose, user, onLogout, onProfile, onSettings }) {
+const BOTTOM_ITEMS = [
+  { id: 'profile', icon: User, label: 'Profil' },
+  { id: 'settings', icon: Settings, label: 'Pengaturan' },
+];
+
+function SidebarContent({ activeView, onNavigate, onClose, user, onLogout }) {
   return (
     <>
       <div className="flex items-center gap-3 p-4 px-6 border-b border-slate-800">
@@ -45,28 +51,29 @@ function SidebarContent({ activeView, onNavigate, onClose, user, onLogout, onPro
         })}
 
         <div className="pt-4 mt-4 border-t border-slate-800 space-y-1">
-          <button
-            onClick={onProfile}
-            className={cn(
-              'w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold transition-all duration-150',
-              'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500/30 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900',
-              'text-slate-400 hover:bg-white/5 hover:text-white'
-            )}
-          >
-            <User size={18} strokeWidth={2} aria-hidden="true" />
-            <span>Profil</span>
-          </button>
-          <button
-            onClick={onSettings}
-            className={cn(
-              'w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold transition-all duration-150',
-              'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500/30 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900',
-              'text-slate-400 hover:bg-white/5 hover:text-white'
-            )}
-          >
-            <Settings size={18} strokeWidth={2} aria-hidden="true" />
-            <span>Pengaturan</span>
-          </button>
+          {BOTTOM_ITEMS.map((item) => {
+            const active = activeView === item.id;
+            return (
+              <button
+                key={item.id}
+                onClick={() => {
+                  onNavigate(item.id);
+                  onClose();
+                }}
+                className={cn(
+                  'w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold transition-all duration-150',
+                  'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500/30 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900',
+                  active
+                    ? 'bg-white/10 text-white'
+                    : 'text-slate-400 hover:bg-white/5 hover:text-white'
+                )}
+                aria-current={active ? 'page' : undefined}
+              >
+                <item.icon size={18} strokeWidth={active ? 2.5 : 2} aria-hidden="true" />
+                <span>{item.label}</span>
+              </button>
+            );
+          })}
         </div>
       </nav>
 
@@ -97,9 +104,7 @@ function SidebarContent({ activeView, onNavigate, onClose, user, onLogout, onPro
 }
 
 export function Sidebar({ isOpen, onClose, activeView, onNavigate, user, onLogout }) {
-  const handleProfile = () => alert('Halaman profil segera hadir!');
-  const handleSettings = () => alert('Halaman pengaturan segera hadir!');
-  const navProps = { activeView, onNavigate, onClose, user, onLogout, onProfile: handleProfile, onSettings: handleSettings };
+  const navProps = { activeView, onNavigate, onClose, user, onLogout };
 
   return (
     <Fragment>

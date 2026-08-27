@@ -12,13 +12,15 @@ import {
   TransactionModal,
   DeleteConfirmModal,
 } from '@/components/dashboard';
-import { ChevronDown, Plus, ArrowUpRight } from 'lucide-react';
+import { ChevronDown, Plus } from 'lucide-react';
 import { Button } from '@/components/ui';
+import Savings from './Savings';
+import Settings from './Settings';
 
 export default function Dashboard({ user, onLogout }) {
+  const [view, setView] = useState('dashboard');
   const [transactions, setTransactions] = useState([]);
   const [stats, setStats] = useState({ totalIncome: 0, totalExpense: 0, balance: 0, categoryBreakdown: [], monthlyTrend: [] });
-  const [view, setView] = useState('dashboard');
   const [loading, setLoading] = useState(true);
 
   const [search, setSearch] = useState('');
@@ -29,6 +31,8 @@ export default function Dashboard({ user, onLogout }) {
   const [editingTx, setEditingTx] = useState(null);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [deletingTx, setDeletingTx] = useState(null);
+
+  const [currentUser, setCurrentUser] = useState(user);
 
   const fetchData = useCallback(async () => {
     try {
@@ -44,6 +48,7 @@ export default function Dashboard({ user, onLogout }) {
   }, []);
 
   useEffect(() => { fetchData(); }, [fetchData]);
+  useEffect(() => { setCurrentUser(user); }, [user]);
 
   const filtered = transactions.filter(t => {
     const q = search.toLowerCase();
@@ -79,14 +84,31 @@ export default function Dashboard({ user, onLogout }) {
     finally { setShowDeleteModal(false); setDeletingTx(null); }
   };
 
+  const handleUserUpdate = (updated) => {
+    setCurrentUser(updated);
+  };
+
+  // Route to sub-pages
+  if (view === 'savings') {
+    return <Savings user={currentUser} onLogout={onLogout} />;
+  }
+  if (view === 'settings') {
+    return <Settings user={currentUser} onLogout={onLogout} onUserUpdate={handleUserUpdate} />;
+  }
+  if (view === 'profile') {
+    return <Settings user={currentUser} onLogout={onLogout} onUserUpdate={handleUserUpdate} />;
+  }
+
+  const pageTitle = view === 'dashboard' ? 'Dashboard' : 'Buku Kas';
+
   return (
-    <PageShell user={user} onLogout={onLogout} activeView={view} onNavigate={setView} pageTitle={view === 'dashboard' ? 'Dashboard' : 'Buku Kas'}>
+    <PageShell user={currentUser} onLogout={onLogout} activeView={view} onNavigate={setView} pageTitle={pageTitle}>
       {view === 'dashboard' && (
         <div className="space-y-6">
           <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }}>
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
               <div>
-                <h1 className="text-2xl font-bold text-slate-900 dark:text-white">Selamat datang, {user?.name?.split(' ')[0]}</h1>
+                <h1 className="text-2xl font-bold text-slate-900 dark:text-white">Selamat datang, {currentUser?.name?.split(' ')[0]}</h1>
                 <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">Ringkasan keuangan Anda hari ini</p>
               </div>
               <Button onClick={openNew} size="lg" className="gap-2 shadow-lg shadow-indigo-500/20 w-full sm:w-auto">

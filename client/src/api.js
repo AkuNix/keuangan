@@ -90,4 +90,64 @@ export const api = {
     });
     return handleResponse(res);
   },
+
+  updateProfile: async (name) => {
+    const res = await fetch(`${API_BASE_URL}/auth/profile`, {
+      method: 'PUT',
+      headers: getHeaders(),
+      body: JSON.stringify({ name }),
+    });
+    return handleResponse(res);
+  },
+
+  changePassword: async (currentPassword, newPassword) => {
+    const res = await fetch(`${API_BASE_URL}/auth/password`, {
+      method: 'PUT',
+      headers: getHeaders(),
+      body: JSON.stringify({ currentPassword, newPassword }),
+    });
+    return handleResponse(res);
+  },
+
+  getSavings: async () => {
+    const res = await fetch(`${API_BASE_URL}/savings`, {
+      headers: getHeaders(),
+    });
+    return handleResponse(res);
+  },
+
+  addSavingGoal: async (data) => {
+    const res = await fetch(`${API_BASE_URL}/savings`, {
+      method: 'POST',
+      headers: getHeaders(),
+      body: JSON.stringify(data),
+    });
+    return handleResponse(res);
+  },
+
+  updateSavingGoal: async (id, data) => {
+    const res = await fetch(`${API_BASE_URL}/savings/${id}`, {
+      method: 'PUT',
+      headers: getHeaders(),
+      body: JSON.stringify(data),
+    });
+    return handleResponse(res);
+  },
+
+  deleteSavingGoal: async (id) => {
+    const res = await fetch(`${API_BASE_URL}/savings/${id}`, {
+      method: 'DELETE',
+      headers: getHeaders(),
+    });
+    return handleResponse(res);
+  },
+
+  depositToGoal: async (goalId, amount, note) => {
+    const res = await fetch(`${API_BASE_URL}/savings/${goalId}/deposit`, {
+      method: 'POST',
+      headers: getHeaders(),
+      body: JSON.stringify({ amount, note }),
+    });
+    return handleResponse(res);
+  },
 };
