@@ -39,20 +39,42 @@ Schema file: `server/prisma/schema.prisma` (source of truth) + `api/prisma/schem
 
 To push schema: `npx prisma db push` (from `server/` directory).
 
+### Models
+- `User` — id, name, email, password, createdAt
+- `Transaction` — id, userId, type (String: "INCOME" | "EXPENSE"), category, description, amount, date
+- `SavingGoal` — id, userId, name, targetAmount, deadline, icon, color, createdAt
+- `SavingDeposit` — id, goalId, amount, note, date
+
 ## API Endpoints
 
 All routes prefixed `/api`:
 
+### Auth
 | Method | Path | Auth | Description |
 |--------|------|------|-------------|
 | POST | `/api/auth/register` | No | Create account (rate limited) |
 | POST | `/api/auth/login` | No | Login, returns JWT (rate limited) |
 | GET | `/api/auth/me` | Bearer | Current user profile |
+| PUT | `/api/auth/profile` | Bearer | Update user name |
+| PUT | `/api/auth/password` | Bearer | Change password |
+
+### Transactions
+| Method | Path | Auth | Description |
+|--------|------|------|-------------|
 | GET | `/api/transactions` | Bearer | List user transactions (paginated) |
 | POST | `/api/transactions` | Bearer | Create transaction |
 | PUT | `/api/transactions/:id` | Bearer | Update transaction |
 | DELETE | `/api/transactions/:id` | Bearer | Delete transaction |
 | GET | `/api/dashboard/stats` | Bearer | Aggregated stats + charts (SQL) |
+
+### Savings
+| Method | Path | Auth | Description |
+|--------|------|------|-------------|
+| GET | `/api/savings` | Bearer | List all saving goals with deposits |
+| POST | `/api/savings` | Bearer | Create saving goal |
+| PUT | `/api/savings/:id` | Bearer | Update saving goal |
+| DELETE | `/api/savings/:id` | Bearer | Delete saving goal |
+| POST | `/api/savings/:id/deposit` | Bearer | Deposit to a goal |
 
 Token format: `Authorization: Bearer <jwt>`.
 
@@ -64,10 +86,26 @@ Token format: `Authorization: Bearer <jwt>`.
 
 ## Frontend Architecture
 
-- `client/src/api.js` — centralized fetch helper, auto-attaches JWT, handles 403 redirect
+### Pages
 - `client/src/pages/Login.jsx` — auth page (split layout: dark brand panel + form)
-- `client/src/pages/Dashboard.jsx` — main app (sidebar nav, balance bar, charts, ledger table, modal form)
-- `client/src/index.css` — Tailwind v4 import + CSS custom properties for design tokens + mobile responsive
+- `client/src/pages/Dashboard.jsx` — main app, routes views (dashboard, ledger, savings, profile, settings)
+- `client/src/pages/Savings.jsx` — savings goals grid + deposit history
+- `client/src/pages/Profile.jsx` — user profile header + edit name
+- `client/src/pages/Settings.jsx` — change password + app info
+
+### Components
+- `client/src/components/layout/` — PageShell, Sidebar, Topbar
+- `client/src/components/dashboard/` — BalanceHero, StatCardsGrid, ChartsArea, TransactionTable, TransactionMobileList, FilterBar, TransactionModal, DeleteConfirmModal
+- `client/src/components/savings/` — SavingsGoalCard, SavingsModal, DepositModal
+- `client/src/components/ui/` — Button, Input, Select, Card, Badge, Modal
+
+### Key Files
+- `client/src/api.js` — centralized fetch helper, auto-attaches JWT, handles 403 redirect
+- `client/src/hooks/useTheme.jsx` — ThemeContext + provider (dark/light mode via `.dark` class on `<html>`)
+- `client/src/hooks/useClock.js` — live clock hook
+- `client/src/lib/utils.js` — utility functions (cn, formatIDR, getInitials)
+- `client/src/lib/animations.js` — Framer Motion animation variants
+- `client/src/index.css` — Tailwind v4 import + CSS custom properties + mobile responsive
 
 ### Design System
 
@@ -77,6 +115,8 @@ Uses **custom CSS variables** (not Tailwind config). Tokens defined in `index.cs
 - Utility class `.font-ledger` for tabular-nums monospace
 - Inline styles used for component-level styling (not Tailwind utility classes)
 - Charts use hardcoded color values matching CSS variables (Recharts doesn't read CSS vars)
+
+Dark mode uses `@custom-variant dark (&:where(.dark, .dark *));` — toggled via ThemeProvider.
 
 ### Data model
 
@@ -98,6 +138,7 @@ Uses **custom CSS variables** (not Tailwind config). Tokens defined in `index.cs
 - **Vercel**: `vercel.json` configures build — installs `api/` + `client/`, generates Prisma client, builds Vite
 - **Neon**: PostgreSQL database, connection string in Vercel env vars
 - GitHub repo: `AkuNix/keuangan`
+- Auto-deploy on push to `main` branch
 
 ## Gotchas
 
@@ -105,6 +146,7 @@ Uses **custom CSS variables** (not Tailwind config). Tokens defined in `index.cs
 - `api/prisma/schema.prisma` is a **copy** of `server/prisma/schema.prisma` — keep both in sync
 - Tailwind v4 uses `@tailwindcss/vite` plugin (NOT PostCSS). Config in `vite.config.js`
 - Vercel free tier cold starts ~30s after idle
+- `useTheme.js` must be renamed to `useTheme.jsx` (contains JSX syntax)
 
 ## Known Issues (Fixed)
 
@@ -121,3 +163,40 @@ Uses **custom CSS variables** (not Tailwind config). Tokens defined in `index.cs
 - ~~No mobile responsive~~ → sidebar collapse on small screens
 - ~~No modal keyboard support~~ → Escape to close
 - ~~No submit loading~~ → spinner on modal submit
+- ~~Sidebar layout broken on desktop~~ → CSS sticky for desktop, Framer Motion only for mobile
+- ~~Sidebar nav broken on sub-pages~~ → render Savings/Settings inside parent PageShell
+- ~~DeleteConfirmModal null crash~~ → guarded transaction.type access
+- ~~Topbar notification~~ → click-based dropdown
+- ~~Topbar user menu~~ → changed from hover to click (mobile friendly)
+- ~~Mobile FAB hidden~~ → moved outside PageShell overflow container
+
+## Features Added
+
+### UI/UX
+- Dark/Light mode toggle (persisted)
+- Live clock in topbar
+- Modern design with gradient backgrounds, glass morphism
+- Framer Motion animations throughout
+- Mobile responsive with collapsible sidebar
+- Mobile FAB for quick transaction creation
+- "Transaksi Baru" button in header
+
+### Savings Goals
+- Create/edit/delete savings goals
+- Set target amount and deadline
+- Deposit to goals with notes
+- Progress tracking with visual bars
+- Summary cards (total saved, target, completed goals)
+- Deposit history timeline
+
+### Profile & Settings
+- Profile page with gradient header and avatar
+- Edit user name
+- Change password with strength indicator
+- Account info display
+
+### Charts
+- Savings trend (Area chart - income vs expense)
+- Top categories (horizontal bar chart)
+- Monthly trend (bar chart)
+- Category breakdown (pie chart)
