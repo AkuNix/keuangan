@@ -16,6 +16,7 @@ import { ChevronDown, Plus } from 'lucide-react';
 import { Button } from '@/components/ui';
 import Savings from './Savings';
 import Settings from './Settings';
+import Profile from './Profile';
 
 export default function Dashboard({ user, onLogout }) {
   const [view, setView] = useState('dashboard');
@@ -161,11 +162,11 @@ export default function Dashboard({ user, onLogout }) {
         )}
 
         {view === 'settings' && (
-          <Settings user={currentUser} onLogout={onLogout} onUserUpdate={handleUserUpdate} onNavigate={setView} />
+          <Settings user={currentUser} onLogout={onLogout} onNavigate={setView} />
         )}
 
         {view === 'profile' && (
-          <Settings user={currentUser} onLogout={onLogout} onUserUpdate={handleUserUpdate} onNavigate={setView} />
+          <Profile user={currentUser} onLogout={onLogout} onUserUpdate={handleUserUpdate} onNavigate={setView} />
         )}
 
         <TransactionModal isOpen={showModal} onClose={() => { setShowModal(false); setEditingTx(null); }} editingTx={editingTx} onSubmit={handleSubmit} submitting={false} />
