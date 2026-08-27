@@ -1,26 +1,32 @@
 import React, { useState } from 'react';
 import { api } from '../api';
-import { BookOpen } from 'lucide-react';
+import { ArrowRight, BadgeCheck, BarChart3, BookOpen, ShieldCheck } from 'lucide-react';
 
 const C = {
-  paper:     '#F7F5F0',
-  paperDark: '#EDEADE',
-  rule:      '#DDD9CF',
-  ink:       '#1A1A2E',
-  inkMid:    '#4A4A6A',
-  inkFaint:  '#9898B8',
-  green:     '#00875A',
-  greenMid:  '#00663F',
-  red:       '#C0392B',
+  canvas: '#f8fafc',
+  surface: '#ffffff',
+  panel: '#0f172a',
+  panelSoft: '#111827',
+  border: '#e2e8f0',
+  borderSoft: '#f1f5f9',
+  text: '#0f172a',
+  muted: '#64748b',
+  subtle: '#94a3b8',
+  brand: '#4f46e5',
+  brandSoft: '#eef2ff',
+  income: '#059669',
+  incomeBg: '#ecfdf5',
+  expense: '#e11d48',
+  expenseBg: '#fff1f2',
 };
 
 export default function Login({ onLoginSuccess }) {
   const [isRegister, setIsRegister] = useState(false);
-  const [name, setName]             = useState('');
-  const [email, setEmail]           = useState('');
-  const [password, setPassword]     = useState('');
-  const [error, setError]           = useState('');
-  const [loading, setLoading]       = useState(false);
+  const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -33,139 +39,279 @@ export default function Login({ onLoginSuccess }) {
       localStorage.setItem('token', data.token);
       onLoginSuccess(data.user);
     } catch (err) {
-      setError(err.message || 'Gagal. Periksa kembali data Anda.');
+      setError(err.message || 'Gagal masuk. Periksa data Anda.');
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div style={{
+    <main style={{
       minHeight: '100vh',
-      background: C.paperDark,
-      display: 'flex',
+      background: C.canvas,
+      position: 'relative',
+      overflow: 'hidden',
       fontFamily: 'var(--font-sans)',
-      /* Ruled paper texture */
-      backgroundImage: `repeating-linear-gradient(to bottom, transparent, transparent 39px, ${C.rule} 39px, ${C.rule} 40px)`,
     }}>
-      {/* Left brand column */}
+      <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none' }}>
+        <div style={{ position: 'absolute', top: '-8rem', left: '-6rem', width: 320, height: 320, borderRadius: '50%', background: 'rgba(79,70,229,0.10)', filter: 'blur(64px)' }} />
+        <div style={{ position: 'absolute', bottom: '-7rem', right: '-5rem', width: 360, height: 360, borderRadius: '50%', background: 'rgba(16,185,129,0.10)', filter: 'blur(72px)' }} />
+      </div>
+
       <div style={{
-        width: 340, flexShrink: 0,
-        background: C.ink,
-        display: 'flex', flexDirection: 'column',
-        padding: '48px 40px',
-        position: 'relative', overflow: 'hidden',
+        position: 'relative',
+        zIndex: 1,
+        maxWidth: 1180,
+        margin: '0 auto',
+        minHeight: '100vh',
+        padding: '16px',
       }}>
-        {/* Decorative ruled lines in ink color */}
         <div style={{
-          position: 'absolute', inset: 0, opacity: 0.06,
-          backgroundImage: `repeating-linear-gradient(to bottom, transparent, transparent 39px, ${C.paperDark} 39px, ${C.paperDark} 40px)`,
-        }} />
-
-        <div style={{ position: 'relative', zIndex: 1, flex: 1, display: 'flex', flexDirection: 'column' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 64 }}>
-            <BookOpen size={20} color={C.inkFaint} strokeWidth={1.5} />
-            <span style={{ fontWeight: 700, fontSize: 15, color: C.paper, letterSpacing: '-0.02em' }}>KeuanganKu</span>
-          </div>
-
-          <div style={{ flex: 1 }}>
-            <p style={{ fontSize: 28, fontWeight: 700, color: C.paper, lineHeight: 1.25, marginBottom: 16, letterSpacing: '-0.03em' }}>
-              Buku kas pribadi<br />yang rapi dan jelas.
-            </p>
-            <p style={{ fontSize: 13, color: C.inkFaint, lineHeight: 1.7, maxWidth: 220 }}>
-              Catat setiap rupiah yang masuk dan keluar. Lihat ke mana uang Anda pergi.
-            </p>
-          </div>
-
-          {/* Bottom feature list */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-            {['Pencatatan pemasukan & pengeluaran', 'Grafik arus kas bulanan', 'Alokasi per kategori'].map(f => (
-              <div key={f} style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                <div style={{ width: 6, height: 6, borderRadius: '50%', background: C.green, flexShrink: 0 }} />
-                <span style={{ fontSize: 12, color: C.inkFaint }}>{f}</span>
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
-
-      {/* Right form column */}
-      <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '40px 32px' }}>
-        <div style={{ width: '100%', maxWidth: 360 }}>
-          <p style={{ fontSize: 20, fontWeight: 700, color: C.ink, marginBottom: 6, letterSpacing: '-0.02em' }}>
-            {isRegister ? 'Buat akun baru' : 'Masuk ke akun Anda'}
-          </p>
-          <p style={{ fontSize: 12, color: C.inkFaint, marginBottom: 32 }}>
-            {isRegister ? 'Isi data di bawah untuk mulai mencatat.' : 'Selamat datang kembali.'}
-          </p>
-
-          {error && (
-            <div style={{
-              marginBottom: 20, padding: '10px 14px',
-              background: '#FCECEA', border: `1px solid #F5B7B1`,
-              borderRadius: 6, fontSize: 12, color: C.red, fontWeight: 500,
-            }}>
-              {error}
+          display: 'grid',
+          gridTemplateColumns: 'minmax(0,1.08fr) minmax(360px,0.92fr)',
+          gap: 16,
+          minHeight: 'calc(100vh - 32px)',
+        }}>
+          <section style={{
+            background: C.panel,
+            color: '#fff',
+            borderRadius: 32,
+            padding: '36px',
+            boxShadow: '0 30px 80px rgba(15,23,42,0.26)',
+            position: 'relative',
+            overflow: 'hidden',
+            display: 'flex',
+            flexDirection: 'column',
+            justifyContent: 'space-between',
+          }}>
+            <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none' }}>
+              <div style={{ position: 'absolute', top: 40, right: 36, width: 180, height: 180, borderRadius: '50%', background: 'rgba(79,70,229,0.24)', filter: 'blur(12px)' }} />
+              <div style={{ position: 'absolute', bottom: 28, left: -18, width: 220, height: 220, borderRadius: '50%', background: 'rgba(16,185,129,0.16)', filter: 'blur(20px)' }} />
             </div>
-          )}
 
-          <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-            {isRegister && (
-              <LoginField label="Nama Lengkap">
-                <input type="text" required placeholder="Nama Anda" value={name}
-                  onChange={e => setName(e.target.value)} style={fieldStyle} />
-              </LoginField>
-            )}
-            <LoginField label="Alamat Email">
-              <input type="email" required placeholder="nama@email.com" value={email}
-                onChange={e => setEmail(e.target.value)} style={fieldStyle} />
-            </LoginField>
-            <LoginField label="Kata Sandi">
-              <input type="password" required placeholder="Minimal 6 karakter" value={password}
-                onChange={e => setPassword(e.target.value)} style={fieldStyle} />
-            </LoginField>
+            <div style={{ position: 'relative', zIndex: 1 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 56 }}>
+                <div style={{ width: 44, height: 44, borderRadius: 14, background: 'rgba(255,255,255,0.08)', display: 'grid', placeItems: 'center', border: '1px solid rgba(255,255,255,0.08)' }}>
+                  <BookOpen size={20} strokeWidth={1.8} />
+                </div>
+                <div>
+                  <div style={{ fontSize: 16, fontWeight: 700, letterSpacing: '-0.02em' }}>KeuanganKu</div>
+                  <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.64)' }}>Personal finance, done cleanly.</div>
+                </div>
+              </div>
 
-            <button type="submit" disabled={loading} style={{
-              marginTop: 8, padding: '12px 0',
-              background: loading ? C.inkMid : C.ink, color: C.paper,
-              border: 'none', borderRadius: 7,
-              fontFamily: 'var(--font-sans)', fontWeight: 700, fontSize: 14,
-              cursor: loading ? 'not-allowed' : 'pointer',
-              letterSpacing: '0.01em', transition: 'background 0.15s',
+              <div style={{ maxWidth: 540 }}>
+                <div style={{
+                  display: 'inline-flex', alignItems: 'center', gap: 8,
+                  padding: '8px 12px', borderRadius: 999,
+                  background: 'rgba(255,255,255,0.08)',
+                  border: '1px solid rgba(255,255,255,0.10)',
+                  fontSize: 12, color: 'rgba(255,255,255,0.86)', marginBottom: 18,
+                }}>
+                  <BadgeCheck size={14} />
+                  Ledger, charts, and login in one place
+                </div>
+                <h1 style={{
+                  fontSize: 'clamp(2.5rem, 6vw, 4.8rem)',
+                  lineHeight: 0.95,
+                  margin: 0,
+                  letterSpacing: '-0.05em',
+                  maxWidth: 520,
+                  fontWeight: 800,
+                }}>
+                  Track money like a product, not a spreadsheet.
+                </h1>
+                <p style={{
+                  marginTop: 20,
+                  maxWidth: 480,
+                  fontSize: 16,
+                  lineHeight: 1.75,
+                  color: 'rgba(255,255,255,0.72)',
+                }}>
+                  Catat pemasukan, pengeluaran, dan tren cash flow dengan tampilan yang tenang, jelas, dan siap dipakai setiap hari.
+                </p>
+              </div>
+            </div>
+
+            <div style={{ position: 'relative', zIndex: 1, display: 'grid', gridTemplateColumns: 'repeat(3,minmax(0,1fr))', gap: 12, marginTop: 28 }}>
+              {[
+                { label: 'Privacy', value: 'JWT login', tone: C.brandSoft, color: C.brand, icon: ShieldCheck },
+                { label: 'Insights', value: 'Charts + ledger', tone: C.incomeBg, color: C.income, icon: BarChart3 },
+                { label: 'Stability', value: 'Neon PostgreSQL', tone: C.expenseBg, color: C.expense, icon: BadgeCheck },
+              ].map((item) => (
+                <div key={item.label} style={{
+                  background: 'rgba(255,255,255,0.05)',
+                  border: '1px solid rgba(255,255,255,0.08)',
+                  borderRadius: 20,
+                  padding: 16,
+                }}>
+                  <div style={{ display: 'inline-flex', alignItems: 'center', gap: 8, fontSize: 11, color: 'rgba(255,255,255,0.60)', marginBottom: 10 }}>
+                    <span style={{ width: 8, height: 8, borderRadius: '50%', background: item.color, boxShadow: `0 0 0 6px ${item.tone}14` }} />
+                    {item.label}
+                  </div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 14, fontWeight: 700, letterSpacing: '-0.02em' }}>
+                    <item.icon size={14} />
+                    {item.value}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </section>
+
+          <section style={{ display: 'flex', alignItems: 'center' }}>
+            <div style={{
+              width: '100%',
+              borderRadius: 32,
+              background: 'rgba(255,255,255,0.84)',
+              backdropFilter: 'blur(18px)',
+              border: `1px solid ${C.borderSoft}`,
+              boxShadow: '0 24px 60px rgba(15,23,42,0.10)',
+              padding: 28,
             }}>
-              {loading ? 'Memproses…' : isRegister ? 'Daftar Sekarang' : 'Masuk'}
-            </button>
-          </form>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12, marginBottom: 22 }}>
+                <div>
+                  <div style={{ fontSize: 22, fontWeight: 800, letterSpacing: '-0.04em', color: C.text }}>
+                    {isRegister ? 'Buat akun' : 'Masuk'}
+                  </div>
+                  <div style={{ marginTop: 6, fontSize: 13, color: C.muted, lineHeight: 1.6 }}>
+                    {isRegister ? 'Mulai mencatat transaksi dalam hitungan detik.' : 'Lanjutkan ke dashboard Anda.'}
+                  </div>
+                </div>
+                <div style={{
+                  width: 46, height: 46, borderRadius: 16,
+                  display: 'grid', placeItems: 'center',
+                  background: C.brandSoft, color: C.brand,
+                  border: '1px solid rgba(79,70,229,0.14)',
+                }}>
+                  <ShieldCheck size={19} />
+                </div>
+              </div>
 
-          <p style={{ marginTop: 24, fontSize: 12, color: C.inkFaint, textAlign: 'center' }}>
-            {isRegister ? 'Sudah punya akun? ' : 'Belum punya akun? '}
-            <button onClick={() => { setIsRegister(!isRegister); setError(''); }} style={{
-              background: 'none', border: 'none', padding: 0,
-              color: C.ink, fontWeight: 700, fontSize: 12,
-              cursor: 'pointer', fontFamily: 'var(--font-sans)',
-              textDecoration: 'underline',
-            }}>
-              {isRegister ? 'Masuk di sini' : 'Daftar gratis'}
-            </button>
-          </p>
+              <div style={{ display: 'flex', gap: 8, padding: 4, borderRadius: 16, background: '#f8fafc', border: `1px solid ${C.border}`, marginBottom: 18 }}>
+                <button type="button" onClick={() => { setIsRegister(false); setError(''); }} style={{
+                  flex: 1, border: 'none', borderRadius: 12, padding: '10px 12px',
+                  background: !isRegister ? C.surface : 'transparent',
+                  color: !isRegister ? C.text : C.muted,
+                  fontWeight: 700, cursor: 'pointer',
+                  boxShadow: !isRegister ? '0 1px 2px rgba(15,23,42,0.06)' : 'none',
+                }}>Masuk</button>
+                <button type="button" onClick={() => { setIsRegister(true); setError(''); }} style={{
+                  flex: 1, border: 'none', borderRadius: 12, padding: '10px 12px',
+                  background: isRegister ? C.surface : 'transparent',
+                  color: isRegister ? C.text : C.muted,
+                  fontWeight: 700, cursor: 'pointer',
+                  boxShadow: isRegister ? '0 1px 2px rgba(15,23,42,0.06)' : 'none',
+                }}>Daftar</button>
+              </div>
+
+              {error && (
+                <div style={{
+                  marginBottom: 16,
+                  padding: '12px 14px',
+                  borderRadius: 16,
+                  background: C.expenseBg,
+                  border: '1px solid rgba(225,29,72,0.15)',
+                  color: C.expense,
+                  fontSize: 13,
+                  lineHeight: 1.5,
+                }}>
+                  {error}
+                </div>
+              )}
+
+              <form onSubmit={handleSubmit} style={{ display: 'grid', gap: 14 }}>
+                {isRegister && (
+                  <LoginField label="Nama lengkap">
+                    <input
+                      type="text"
+                      required
+                      placeholder="Nama Anda"
+                      value={name}
+                      onChange={(e) => setName(e.target.value)}
+                      style={fieldStyle}
+                    />
+                  </LoginField>
+                )}
+
+                <LoginField label="Alamat email">
+                  <input
+                    type="email"
+                    required
+                    placeholder="nama@email.com"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    style={fieldStyle}
+                  />
+                </LoginField>
+
+                <LoginField label="Kata sandi">
+                  <input
+                    type="password"
+                    required
+                    placeholder="Minimal 6 karakter"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    style={fieldStyle}
+                  />
+                </LoginField>
+
+                <button
+                  type="submit"
+                  disabled={loading}
+                  style={{
+                    marginTop: 6,
+                    width: '100%',
+                    padding: '13px 16px',
+                    borderRadius: 16,
+                    border: 'none',
+                    background: loading ? '#818cf8' : C.brand,
+                    color: '#fff',
+                    fontWeight: 700,
+                    fontSize: 14,
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: 8,
+                    cursor: loading ? 'not-allowed' : 'pointer',
+                    boxShadow: '0 14px 30px rgba(79,70,229,0.22)',
+                    transition: 'transform 0.15s ease, box-shadow 0.15s ease, background 0.15s ease',
+                  }}
+                >
+                  {loading ? 'Memproses…' : isRegister ? 'Buat akun' : 'Masuk ke dashboard'}
+                  {!loading && <ArrowRight size={16} />}
+                </button>
+              </form>
+
+              <div style={{ marginTop: 18, display: 'flex', alignItems: 'center', gap: 10, color: C.subtle, fontSize: 12 }}>
+                <span style={{ width: 8, height: 8, borderRadius: '50%', background: C.income }} />
+                Data tersimpan di Neon PostgreSQL.
+              </div>
+            </div>
+          </section>
         </div>
       </div>
-    </div>
+    </main>
   );
 }
 
 const fieldStyle = {
-  width: '100%', padding: '10px 12px',
-  background: '#fff', border: `1px solid #DDD9CF`,
-  borderRadius: 6, fontFamily: 'var(--font-sans)', fontSize: 13, color: '#1A1A2E',
-  outline: 'none', boxSizing: 'border-box',
-  transition: 'border-color 0.15s',
+  width: '100%',
+  padding: '12px 14px',
+  background: '#fff',
+  border: '1px solid #dbe3f0',
+  borderRadius: 14,
+  fontFamily: 'var(--font-sans)',
+  fontSize: 14,
+  color: '#0f172a',
+  outline: 'none',
+  boxSizing: 'border-box',
+  transition: 'border-color 0.15s, box-shadow 0.15s',
 };
 
 function LoginField({ label, children }) {
   return (
     <div>
-      <label style={{ display: 'block', fontSize: 10, fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase', color: '#9898B8', marginBottom: 6 }}>
+      <label style={{ display: 'block', fontSize: 12, fontWeight: 700, letterSpacing: '0.01em', color: '#475569', marginBottom: 8 }}>
         {label}
       </label>
       {children}

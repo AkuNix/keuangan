@@ -38,15 +38,15 @@ function App() {
     return (
       <div style={{
         minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center',
-        background: '#F7F5F0', fontFamily: 'var(--font-sans)',
+        background: 'linear-gradient(180deg, #ffffff 0%, #f8fafc 100%)', fontFamily: 'var(--font-sans)',
       }}>
         <div style={{ textAlign: 'center' }}>
           <div style={{
-            width: 40, height: 40, border: '3px solid #DDD9CF',
-            borderTopColor: '#1A1A2E', borderRadius: '50%',
+            width: 42, height: 42, border: '3px solid #e2e8f0',
+            borderTopColor: '#4f46e5', borderRadius: '50%',
             animation: 'spin 0.8s linear infinite', margin: '0 auto',
           }} />
-          <p style={{ color: '#9898B8', marginTop: 16, fontSize: 13, fontWeight: 500 }}>Memuat aplikasi...</p>
+          <p style={{ color: '#64748b', marginTop: 16, fontSize: 13, fontWeight: 600 }}>Memuat aplikasi...</p>
           <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
         </div>
       </div>
