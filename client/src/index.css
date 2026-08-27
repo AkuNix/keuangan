@@ -1,0 +1,75 @@
+@import "tailwindcss";
+
+/* ─── Design Tokens: Buku Kas Aesthetic ─── */
+:root {
+  --paper: #F7F5F0;
+  --paper-dark: #EDEADE;
+  --ink: #1A1A2E;
+  --ink-mid: #4A4A6A;
+  --ink-faint: #9898B8;
+  --rule: #DDD9CF;
+  --green: #00875A;
+  --green-bg: #E6F5F0;
+  --green-mid: #00663F;
+  --red: #C0392B;
+  --red-bg: #FCECEA;
+  --red-mid: #A0321E;
+  --accent: #2C5F8A;
+  --accent-bg: #EAF1F8;
+
+  --font-sans: 'Instrument Sans', system-ui, sans-serif;
+  --font-mono: 'DM Mono', 'Courier New', monospace;
+}
+
+/* ─── Base ─── */
+*, *::before, *::after { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  font-family: var(--font-sans);
+  background-color: var(--paper);
+  color: var(--ink);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* ─── Ruled paper texture on dashboard body ─── */
+.ruled-bg {
+  background-image: repeating-linear-gradient(
+    to bottom,
+    transparent,
+    transparent 39px,
+    var(--rule) 39px,
+    var(--rule) 40px
+  );
+}
+
+/* ─── Text selection ─── */
+::selection {
+  background: var(--ink);
+  color: var(--paper);
+}
+
+/* ─── Caret ─── */
+input, textarea {
+  caret-color: var(--green);
+}
+
+/* ─── Custom scrollbar ─── */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: var(--paper-dark); }
+::-webkit-scrollbar-thumb { background: var(--rule); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: var(--ink-faint); }
+
+/* ─── Focus rings ─── */
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+/* ─── Monospaced numerals ─── */
+.font-ledger {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.02em;
+}
