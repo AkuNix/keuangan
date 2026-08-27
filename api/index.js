@@ -10,9 +10,21 @@ const app = express();
 const prisma = new PrismaClient();
 const JWT_SECRET = process.env.JWT_SECRET || 'super-secret-key';
 
-app.use(cors({
-  origin: process.env.CLIENT_URL || 'http://localhost:5173',
-}));
+const corsOptions = {
+  origin: (origin, callback) => {
+    if (!origin) return callback(null, true);
+    if (
+      origin === 'http://localhost:5173' ||
+      origin === process.env.CLIENT_URL ||
+      /^https:\/\/.*\.vercel\.app$/i.test(origin)
+    ) {
+      return callback(null, true);
+    }
+    return callback(null, false);
+  },
+};
+
+app.use(cors(corsOptions));
 app.use(express.json({ limit: '1mb' }));
 
 const authLimiter = rateLimit({
