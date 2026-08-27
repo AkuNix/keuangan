@@ -2,22 +2,23 @@
 
 ## Architecture
 
-Two separate apps in a monorepo root:
+Monorepo with three components:
 
-- `server/` — Express API (Node, Prisma ORM, SQLite)
+- `api/` — Vercel Serverless Function (Express wrapped with serverless-http)
+- `server/` — Express API (Node, Prisma ORM, PostgreSQL) — for local dev
 - `client/` — React SPA (Vite, Tailwind CSS v4, Recharts)
 
-Backend runs on port `5000`. Frontend dev server on `5173`. CORS is enabled; no proxy needed.
+Production: deployed on **Vercel** (frontend + API serverless). Database on **Neon PostgreSQL**.
+Local dev: Backend on port `5000`. Frontend dev server on `5173`. CORS is enabled; no proxy needed.
 
 ## Commands
 
-### server/
+### Local dev
 ```bash
 cd server
 npm install          # install deps
 npm run dev          # start dev (nodemon, port 5000)
-npm run start        # production start
-npx prisma db push   # push schema changes to SQLite dev.db
+npx prisma db push   # push schema changes to Neon
 npx prisma studio    # visual DB browser
 ```
 
@@ -33,12 +34,10 @@ npm run preview      # preview production build
 
 ## Database
 
-**SQLite** via Prisma. DB file lives at `server/prisma/dev.db`.
-Schema file: `server/prisma/schema.prisma`.
+**PostgreSQL** via Prisma on Neon (cloud).
+Schema file: `server/prisma/schema.prisma` (source of truth) + `api/prisma/schema.prisma` (copy for Vercel build).
 
-To reset DB: delete `server/prisma/dev.db` then run `npx prisma db push`.
-
-⚠️ `.env` still says PostgreSQL URL but schema.prisma uses SQLite. Prisma reads `schema.prisma` `datasource` block directly. The `.env` DATABASE_URL is unused — ignore it.
+To push schema: `npx prisma db push` (from `server/` directory).
 
 ## API Endpoints
 
@@ -46,23 +45,29 @@ All routes prefixed `/api`:
 
 | Method | Path | Auth | Description |
 |--------|------|------|-------------|
-| POST | `/api/auth/register` | No | Create account |
-| POST | `/api/auth/login` | No | Login, returns JWT |
+| POST | `/api/auth/register` | No | Create account (rate limited) |
+| POST | `/api/auth/login` | No | Login, returns JWT (rate limited) |
 | GET | `/api/auth/me` | Bearer | Current user profile |
-| GET | `/api/transactions` | Bearer | List user transactions |
+| GET | `/api/transactions` | Bearer | List user transactions (paginated) |
 | POST | `/api/transactions` | Bearer | Create transaction |
 | PUT | `/api/transactions/:id` | Bearer | Update transaction |
 | DELETE | `/api/transactions/:id` | Bearer | Delete transaction |
-| GET | `/api/dashboard/stats` | Bearer | Aggregated stats + charts |
+| GET | `/api/dashboard/stats` | Bearer | Aggregated stats + charts (SQL) |
 
 Token format: `Authorization: Bearer <jwt>`.
 
+### Transactions Pagination
+`GET /api/transactions?page=1&limit=50` returns:
+```json
+{ "data": [...], "pagination": { "page": 1, "limit": 50, "total": 120, "totalPages": 3 } }
+```
+
 ## Frontend Architecture
 
-- `client/src/api.js` — centralized fetch helper, auto-attaches JWT from localStorage
+- `client/src/api.js` — centralized fetch helper, auto-attaches JWT, handles 403 redirect
 - `client/src/pages/Login.jsx` — auth page (split layout: dark brand panel + form)
 - `client/src/pages/Dashboard.jsx` — main app (sidebar nav, balance bar, charts, ledger table, modal form)
-- `client/src/index.css` — Tailwind v4 import + CSS custom properties for design tokens
+- `client/src/index.css` — Tailwind v4 import + CSS custom properties for design tokens + mobile responsive
 
 ### Design System
 
@@ -75,41 +80,44 @@ Uses **custom CSS variables** (not Tailwind config). Tokens defined in `index.cs
 
 ### Data model
 
-- `type` field on Transaction is a **String** ("INCOME" | "EXPENSE"), not an enum (SQLite doesn't support enums)
+- `type` field on Transaction is a **String** ("INCOME" | "EXPENSE"), not an enum
 - Categories are hardcoded arrays in frontend (`CATEGORIES` object in Dashboard.jsx)
-- Chart colors hardcoded in `CAT_COLORS` array in Dashboard.jsx
+- DB indexes on `userId`, `type`, `date`, and composite `userId+type`
+
+## Security
+
+- Rate limiting on `/api/auth/register` and `/api/auth/login` (20 req / 15 min)
+- Password min 6 chars, max 128 chars (server-side validation)
+- Email format validation (regex)
+- Input sanitization (trim, max length) on all string fields
+- Amount validation (positive, max 999999999999)
+- JWT auto-redirect on 403 (expired token)
+
+## Deployment
+
+- **Vercel**: `vercel.json` configures build — installs `api/` + `client/`, generates Prisma client, builds Vite
+- **Neon**: PostgreSQL database, connection string in Vercel env vars
+- GitHub repo: `AkuNix/keuangan`
 
 ## Gotchas
 
-- `npm run dev` in server uses nodemon; kill any running node processes before restarting if port 5000 is in use
-- Tailwind v4 uses `@tailwindcss/vite` plugin (NOT PostCSS). Config in `vite.config.js`, not `postcss.config.js`
-- No existing test suite, no CI, no linting config beyond oxlint
-- `server/.env` JWT_SECRET is hardcoded and should not be committed to public repos
+- `server/` directory is for **local dev only**. Production uses `api/index.js` (serverless)
+- `api/prisma/schema.prisma` is a **copy** of `server/prisma/schema.prisma` — keep both in sync
+- Tailwind v4 uses `@tailwindcss/vite` plugin (NOT PostCSS). Config in `vite.config.js`
+- Vercel free tier cold starts ~30s after idle
 
-## Improvement Backlog
+## Known Issues (Fixed)
 
-Prioritized issues found during code review. Pick any when ready to work on.
-
-### Critical (Security)
-- Add `.env` to `.gitignore` — JWT_SECRET currently at risk of being committed
-- Add rate limiting to `/api/auth/login` (e.g. `express-rate-limit`)
-- Add password min-length validation on server side (not just frontend)
-- Sanitize/validate inputs on server (parseFloat, type checks)
-
-### High
-- `/api/dashboard/stats` fetches ALL transactions then sums in JS → use SQL GROUP BY + SUM instead
-- Loading screen in `App.jsx` still uses `bg-gray-100 border-indigo-600` (old Tailwind classes) — should use `--paper`/`--ink` CSS variables to match design system
-- `api.js` hardcodes `http://localhost:5000/api` — use env var or relative URL for production
-- Add auto-redirect to login when JWT expires mid-session (intercept 403 responses)
-
-### Medium
-- Add pagination to `/api/transactions` endpoint
-- Add database indexes on `userId`, `type`, `date` columns
-- Mobile responsive: sidebar should collapse/hide on small viewports
-- Add `.env.example` with documented variables
-
-### Low (Polish)
-- Add empty state illustration + CTA when no transactions exist
-- Add loading spinner to modal submit button (prevent double-submit)
-- Add keyboard support: Escape to close modal
-- Bundle split Recharts (currently 597KB JS bundle)
+- ~~`.env` JWT_SECRET risk~~ → `.env` in `.gitignore`
+- ~~Rate limiting~~ → express-rate-limit added
+- ~~Password validation~~ → server-side min 6 chars
+- ~~Input sanitization~~ → trim + length checks
+- ~~Dashboard stats fetch all~~ → SQL GROUP BY + aggregate
+- ~~Loading screen old classes~~ → CSS variables
+- ~~api.js hardcoded URL~~ → env var `VITE_API_URL`
+- ~~JWT expiry handling~~ → 403 auto-redirect
+- ~~No pagination~~ → offset pagination on transactions
+- ~~No DB indexes~~ → indexes on userId, type, date
+- ~~No mobile responsive~~ → sidebar collapse on small screens
+- ~~No modal keyboard support~~ → Escape to close
+- ~~No submit loading~~ → spinner on modal submit

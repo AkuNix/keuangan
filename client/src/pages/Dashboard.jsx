@@ -5,7 +5,7 @@ import {
   PieChart, Pie, Cell
 } from 'recharts';
 import {
-  LogOut, Plus, Edit2, Trash2, Search, X, BookOpen, LayoutDashboard, List
+  LogOut, Plus, Edit2, Trash2, Search, X, BookOpen, LayoutDashboard, List, Menu
 } from 'lucide-react';
 
 /* ── Palette derived from CSS variables (inline fallbacks for Recharts) ── */
@@ -134,6 +134,7 @@ export default function Dashboard({ user, onLogout }) {
   const [editingTx, setEditingTx]         = useState(null);
   const [search, setSearch]               = useState('');
   const [typeFilter, setTypeFilter]       = useState('ALL');
+  const [sidebarOpen, setSidebarOpen]     = useState(false);
 
   // Form
   const [fType, setFType]           = useState('EXPENSE');
@@ -141,13 +142,22 @@ export default function Dashboard({ user, onLogout }) {
   const [fCategory, setFCategory]   = useState('Makanan');
   const [fDesc, setFDesc]           = useState('');
   const [fDate, setFDate]           = useState(new Date().toISOString().slice(0, 10));
+  const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => { fetchData(); }, []);
 
+  useEffect(() => {
+    const handleEsc = (e) => { if (e.key === 'Escape') setShowModal(false); };
+    if (showModal) {
+      document.addEventListener('keydown', handleEsc);
+      return () => document.removeEventListener('keydown', handleEsc);
+    }
+  }, [showModal]);
+
   const fetchData = async () => {
     try {
-      const [txData, statsData] = await Promise.all([api.getTransactions(), api.getDashboardStats()]);
-      setTransactions(txData);
+      const [txData, statsData] = await Promise.all([api.getTransactions(1, 200), api.getDashboardStats()]);
+      setTransactions(txData.data || txData);
       setStats(statsData);
     } catch (e) { console.error(e); }
   };
@@ -165,12 +175,14 @@ export default function Dashboard({ user, onLogout }) {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setSubmitting(true);
     const payload = { type: fType, amount: parseFloat(fAmount), category: fCategory, description: fDesc, date: new Date(fDate).toISOString() };
     try {
       if (editingTx) await api.updateTransaction(editingTx.id, payload);
       else await api.addTransaction(payload);
       setShowModal(false); fetchData();
     } catch (err) { alert(err.message); }
+    finally { setSubmitting(false); }
   };
 
   const handleDelete = async (id) => {
@@ -209,6 +221,9 @@ export default function Dashboard({ user, onLogout }) {
     <div style={{ display: 'flex', minHeight: '100vh', background: C.paper, fontFamily: 'var(--font-sans)' }}>
 
       {/* ── Left Sidebar (binder spine) ── */}
+      {sidebarOpen && <div onClick={() => setSidebarOpen(false)}
+        style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.3)', zIndex: 29 }}
+        className="mobile-overlay" />}
       <aside style={{
         width: 64, flexShrink: 0,
         background: C.paperDark,
@@ -217,7 +232,7 @@ export default function Dashboard({ user, onLogout }) {
         paddingTop: 20, paddingBottom: 20,
         position: 'sticky', top: 0, height: '100vh',
         zIndex: 30,
-      }}>
+      }} className={`sidebar ${sidebarOpen ? 'open' : ''}`}>
         {/* Brand mark */}
         <div style={{ marginBottom: 24, color: C.ink }}>
           <BookOpen size={22} strokeWidth={1.5} />
@@ -259,7 +274,13 @@ export default function Dashboard({ user, onLogout }) {
           display: 'flex', alignItems: 'center', justifyContent: 'space-between',
           background: C.paper, position: 'sticky', top: 0, zIndex: 20,
         }}>
-          <div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+            <button onClick={() => setSidebarOpen(!sidebarOpen)} style={{
+              display: 'none', border: 'none', background: 'none', color: C.ink,
+              cursor: 'pointer', padding: 4,
+            }} className="mobile-menu-btn">
+              <Menu size={20} />
+            </button>
             <span style={{ fontFamily: 'var(--font-sans)', fontWeight: 700, fontSize: 15, color: C.ink, letterSpacing: '-0.02em' }}>
               KeuanganKu
             </span>
@@ -504,8 +525,14 @@ export default function Dashboard({ user, onLogout }) {
                 <button type="button" onClick={() => setShowModal(false)} style={{ flex: 1, padding: '10px 0', borderRadius: 6, border: `1px solid ${C.rule}`, background: 'transparent', color: C.inkMid, fontFamily: 'var(--font-sans)', fontWeight: 600, fontSize: 13, cursor: 'pointer' }}>
                   Batal
                 </button>
-                <button type="submit" style={{ flex: 2, padding: '10px 0', borderRadius: 6, border: 'none', background: C.ink, color: C.paper, fontFamily: 'var(--font-sans)', fontWeight: 700, fontSize: 13, cursor: 'pointer', letterSpacing: '0.01em' }}>
-                  {editingTx ? 'Simpan Perubahan' : 'Catat Sekarang'}
+                <button type="submit" disabled={submitting} style={{
+                  flex: 2, padding: '10px 0', borderRadius: 6, border: 'none',
+                  background: submitting ? C.inkMid : C.ink,
+                  color: C.paper, fontFamily: 'var(--font-sans)', fontWeight: 700,
+                  fontSize: 13, cursor: submitting ? 'not-allowed' : 'pointer',
+                  letterSpacing: '0.01em', opacity: submitting ? 0.7 : 1,
+                }}>
+                  {submitting ? 'Menyimpan…' : editingTx ? 'Simpan Perubahan' : 'Catat Sekarang'}
                 </button>
               </div>
             </form>
@@ -540,8 +567,12 @@ function ModalField({ label, children }) {
 /* ── Transaction Table (shared between dashboard preview + full ledger) ── */
 function TransactionTable({ rows, onEdit, onDelete }) {
   if (!rows.length) return (
-    <div style={{ padding: '48px 24px', textAlign: 'center', fontFamily: 'var(--font-sans)', fontSize: 13, color: '#9898B8' }}>
-      Belum ada transaksi tercatat
+    <div style={{ padding: '64px 24px', textAlign: 'center', fontFamily: 'var(--font-sans)' }}>
+      <div style={{ width: 48, height: 48, borderRadius: '50%', background: C.paperDark, display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px' }}>
+        <BookOpen size={20} color={C.inkFaint} />
+      </div>
+      <p style={{ fontSize: 14, color: C.ink, fontWeight: 600, marginBottom: 6 }}>Belum ada transaksi</p>
+      <p style={{ fontSize: 12, color: C.inkFaint, marginBottom: 16 }}>Catat transaksi pertama Anda untuk mulai melacak keuangan.</p>
     </div>
   );
 

@@ -13,6 +13,11 @@ const getHeaders = () => {
 
 const handleResponse = async (res) => {
   const data = await res.json();
+  if (res.status === 403) {
+    localStorage.removeItem('token');
+    window.location.href = '/';
+    throw new Error('Sesi berakhir. Silakan login kembali.');
+  }
   if (!res.ok) {
     throw new Error(data.error || 'Something went wrong');
   }
@@ -45,8 +50,8 @@ export const api = {
     return handleResponse(res);
   },
 
-  getTransactions: async () => {
-    const res = await fetch(`${API_BASE_URL}/transactions`, {
+  getTransactions: async (page = 1, limit = 50) => {
+    const res = await fetch(`${API_BASE_URL}/transactions?page=${page}&limit=${limit}`, {
       headers: getHeaders(),
     });
     return handleResponse(res);

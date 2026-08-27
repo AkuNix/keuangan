@@ -20,10 +20,15 @@ model Transaction {
   id          Int      @id @default(autoincrement())
   userId      Int
   user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  type        String   // "INCOME" or "EXPENSE"
+  type        String
   amount      Float
   category    String
   description String?
   date        DateTime
   createdAt   DateTime @default(now())
+
+  @@index([userId])
+  @@index([type])
+  @@index([date])
+  @@index([userId, type])
 }
