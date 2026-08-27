@@ -1,13 +1,12 @@
 import { useState, useEffect, useCallback } from 'react';
 import { motion } from 'framer-motion';
 import { api } from '../api';
-import { PageShell } from '@/components/layout';
 import { SavingsGoalCard, SavingsModal, DepositModal } from '@/components/savings';
 import { Button } from '@/components/ui';
 import { Plus, Target, TrendingUp, Coins } from 'lucide-react';
 import { formatIDR } from '@/lib/utils';
 
-export default function Savings({ user, onLogout }) {
+export default function Savings({ user, onLogout, onNavigate }) {
   const [goals, setGoals] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -69,7 +68,7 @@ export default function Savings({ user, onLogout }) {
   };
 
   return (
-    <PageShell user={user} onLogout={onLogout} activeView="savings" onNavigate={() => {}} pageTitle="Tabungan">
+    <div>
       <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }}>
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
           <div>
@@ -168,6 +167,6 @@ export default function Savings({ user, onLogout }) {
 
       <SavingsModal isOpen={showGoalModal} onClose={() => { setShowGoalModal(false); setEditingGoal(null); }} editingGoal={editingGoal} onSubmit={handleGoalSubmit} submitting={submitting} />
       <DepositModal isOpen={showDepositModal} onClose={() => { setShowDepositModal(false); setDepositGoal(null); }} goal={depositGoal} onSubmit={handleDeposit} submitting={submitting} />
-    </PageShell>
+    </div>
   );
 }

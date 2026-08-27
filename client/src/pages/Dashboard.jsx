@@ -88,22 +88,17 @@ export default function Dashboard({ user, onLogout }) {
     setCurrentUser(updated);
   };
 
-  // Route to sub-pages
-  if (view === 'savings') {
-    return <Savings user={currentUser} onLogout={onLogout} />;
-  }
-  if (view === 'settings') {
-    return <Settings user={currentUser} onLogout={onLogout} onUserUpdate={handleUserUpdate} />;
-  }
-  if (view === 'profile') {
-    return <Settings user={currentUser} onLogout={onLogout} onUserUpdate={handleUserUpdate} />;
-  }
-
-  const pageTitle = view === 'dashboard' ? 'Dashboard' : 'Buku Kas';
+  const pageTitles = {
+    dashboard: 'Dashboard',
+    ledger: 'Buku Kas',
+    savings: 'Tabungan',
+    settings: 'Pengaturan',
+    profile: 'Profil',
+  };
 
   return (
     <>
-      <PageShell user={currentUser} onLogout={onLogout} activeView={view} onNavigate={setView} pageTitle={pageTitle}>
+      <PageShell user={currentUser} onLogout={onLogout} activeView={view} onNavigate={setView} pageTitle={pageTitles[view] || 'Dashboard'}>
         {view === 'dashboard' && (
           <div className="space-y-6">
             <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }}>
@@ -159,6 +154,18 @@ export default function Dashboard({ user, onLogout }) {
               <div className="lg:hidden"><TransactionMobileList rows={filtered} onEdit={openEdit} onDelete={confirmDelete} loading={loading} /></div>
             </div>
           </motion.div>
+        )}
+
+        {view === 'savings' && (
+          <Savings user={currentUser} onLogout={onLogout} onNavigate={setView} />
+        )}
+
+        {view === 'settings' && (
+          <Settings user={currentUser} onLogout={onLogout} onUserUpdate={handleUserUpdate} onNavigate={setView} />
+        )}
+
+        {view === 'profile' && (
+          <Settings user={currentUser} onLogout={onLogout} onUserUpdate={handleUserUpdate} onNavigate={setView} />
         )}
 
         <TransactionModal isOpen={showModal} onClose={() => { setShowModal(false); setEditingTx(null); }} editingTx={editingTx} onSubmit={handleSubmit} submitting={false} />
