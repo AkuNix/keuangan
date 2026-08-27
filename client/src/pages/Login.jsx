@@ -46,7 +46,7 @@ export default function Login({ onLoginSuccess }) {
   };
 
   return (
-    <main style={{
+    <main className="login-shell" style={{
       minHeight: '100vh',
       background: C.canvas,
       position: 'relative',
@@ -66,13 +66,13 @@ export default function Login({ onLoginSuccess }) {
         minHeight: '100vh',
         padding: '16px',
       }}>
-        <div style={{
+        <div className="login-grid" style={{
           display: 'grid',
           gridTemplateColumns: 'minmax(0,1.08fr) minmax(360px,0.92fr)',
           gap: 16,
           minHeight: 'calc(100vh - 32px)',
         }}>
-          <section style={{
+          <section className="login-hero" style={{
             background: C.panel,
             color: '#fff',
             borderRadius: 32,
@@ -158,8 +158,8 @@ export default function Login({ onLoginSuccess }) {
             </div>
           </section>
 
-          <section style={{ display: 'flex', alignItems: 'center' }}>
-            <div style={{
+          <section className="login-panel" style={{ display: 'flex', alignItems: 'center' }}>
+            <div className="login-card" style={{
               width: '100%',
               borderRadius: 32,
               background: 'rgba(255,255,255,0.84)',

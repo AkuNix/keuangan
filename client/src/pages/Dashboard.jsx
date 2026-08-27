@@ -60,7 +60,7 @@ function BalanceBar({ stats }) {
     : 0;
 
   return (
-    <section style={{
+    <section className="balance-bar" style={{
       background: `linear-gradient(135deg, ${C.panel} 0%, ${C.panel2} 100%)`,
       borderRadius: 28,
       padding: 28,
@@ -74,7 +74,7 @@ function BalanceBar({ stats }) {
         <div style={{ position: 'absolute', bottom: -36, left: -24, width: 220, height: 220, borderRadius: '50%', background: 'rgba(16,185,129,0.12)', filter: 'blur(18px)' }} />
       </div>
 
-      <div style={{ position: 'relative', zIndex: 1, display: 'grid', gridTemplateColumns: 'minmax(0, 1.2fr) minmax(280px, 0.8fr)', gap: 20, alignItems: 'stretch' }}>
+      <div className="balance-grid" style={{ position: 'relative', zIndex: 1, display: 'grid', gridTemplateColumns: 'minmax(0, 1.2fr) minmax(280px, 0.8fr)', gap: 20, alignItems: 'stretch' }}>
         <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between', gap: 18 }}>
           <div>
             <div style={{ display: 'inline-flex', alignItems: 'center', gap: 8, padding: '8px 12px', borderRadius: 999, background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.08)', fontSize: 12, color: 'rgba(255,255,255,0.72)' }}>
@@ -91,13 +91,13 @@ function BalanceBar({ stats }) {
             </p>
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: 12 }}>
+          <div className="balance-stats" style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: 12 }}>
             <MiniMetric label="Pemasukan" value={`+${formatIDR(stats.totalIncome)}`} tone="income" />
             <MiniMetric label="Pengeluaran" value={`-${formatIDR(stats.totalExpense)}`} tone="expense" />
           </div>
         </div>
 
-        <div style={{ display: 'grid', gap: 12 }}>
+        <div className="balance-side" style={{ display: 'grid', gap: 12 }}>
           <div style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 22, padding: 18 }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
               <span style={{ fontSize: 12, color: 'rgba(255,255,255,0.60)' }}>Rasio hemat</span>
@@ -119,7 +119,7 @@ function BalanceBar({ stats }) {
             </div>
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: 12 }}>
+          <div className="balance-mini-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: 12 }}>
             <MicroCard title="Terakhir" value={stats.monthlyTrend.at(-1)?.month || '—'} />
             <MicroCard title="Kategori aktif" value={stats.categoryBreakdown[0]?.name || '—'} />
           </div>
@@ -266,7 +266,7 @@ export default function Dashboard({ user, onLogout }) {
   };
 
   return (
-    <div style={{ display: 'flex', minHeight: '100vh', background: C.canvas, fontFamily: 'var(--font-sans)', color: C.ink }}>
+    <div className="dashboard-shell" style={{ display: 'flex', minHeight: '100vh', background: C.canvas, fontFamily: 'var(--font-sans)', color: C.ink }}>
 
       {/* ── Left Sidebar (binder spine) ── */}
       {sidebarOpen && <div onClick={() => setSidebarOpen(false)}
@@ -316,10 +316,10 @@ export default function Dashboard({ user, onLogout }) {
       </aside>
 
       {/* ── Main area ── */}
-      <div style={{ flex: 1, overflow: 'auto', position: 'relative' }}>
+      <div className="dashboard-main" style={{ flex: 1, overflow: 'auto', position: 'relative' }}>
 
         {/* ── Top header ── */}
-        <header style={{
+        <header className="dashboard-topbar" style={{
           borderBottom: `1px solid ${C.rule}`,
           padding: '0 24px', height: 72,
           display: 'flex', alignItems: 'center', justifyContent: 'space-between',
@@ -363,13 +363,13 @@ export default function Dashboard({ user, onLogout }) {
 
         {/* ── View: Dashboard ── */}
         {view === 'dashboard' && (
-          <div style={{ padding: '24px 24px 64px', maxWidth: 1440, margin: '0 auto' }}>
+          <div className="dashboard-content" style={{ padding: '24px 24px 64px', maxWidth: 1440, margin: '0 auto' }}>
 
             {/* Charts row */}
-            <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0,1.2fr) minmax(320px,0.8fr)', gap: 20, marginTop: 24, marginBottom: 20 }}>
+            <div className="dashboard-grid" style={{ display: 'grid', gridTemplateColumns: 'minmax(0,1.2fr) minmax(320px,0.8fr)', gap: 20, marginTop: 24, marginBottom: 20 }}>
 
               {/* Bar chart */}
-              <div style={{ border: `1px solid ${C.rule}`, borderRadius: 28, padding: 24, background: C.surface, boxShadow: `0 18px 50px ${C.shadow}` }}>
+              <div className="dashboard-card" style={{ border: `1px solid ${C.rule}`, borderRadius: 28, padding: 24, background: C.surface, boxShadow: `0 18px 50px ${C.shadow}` }}>
                 <div style={{ marginBottom: 18 }}>
                   <div style={{ fontSize: 18, fontWeight: 800, letterSpacing: '-0.03em', color: C.ink }}>Arus kas bulanan</div>
                   <div style={{ marginTop: 6, fontSize: 13, color: C.inkFaint }}>Pemasukan dan pengeluaran bergerak dari bulan ke bulan.</div>
@@ -403,7 +403,7 @@ export default function Dashboard({ user, onLogout }) {
               </div>
 
               {/* Donut + category list */}
-              <div style={{ border: `1px solid ${C.rule}`, borderRadius: 28, padding: 24, background: C.surface, boxShadow: `0 18px 50px ${C.shadow}` }}>
+              <div className="dashboard-card" style={{ border: `1px solid ${C.rule}`, borderRadius: 28, padding: 24, background: C.surface, boxShadow: `0 18px 50px ${C.shadow}` }}>
                 <div style={{ marginBottom: 18 }}>
                   <div style={{ fontSize: 18, fontWeight: 800, letterSpacing: '-0.03em', color: C.ink }}>Alokasi pengeluaran</div>
                   <div style={{ marginTop: 6, fontSize: 13, color: C.inkFaint }}>Komposisi belanja terbesar yang perlu diawasi.</div>
@@ -450,7 +450,7 @@ export default function Dashboard({ user, onLogout }) {
                 <div style={{ marginTop: 6, fontSize: 13, color: C.inkFaint }}>Lima transaksi terakhir yang paling relevan.</div>
               </div>
             </div>
-            <div style={{ border: `1px solid ${C.rule}`, borderRadius: 28, overflow: 'hidden', background: C.surface, boxShadow: `0 18px 50px ${C.shadow}` }}>
+            <div className="dashboard-table-wrap" style={{ border: `1px solid ${C.rule}`, borderRadius: 28, overflow: 'hidden', background: C.surface, boxShadow: `0 18px 50px ${C.shadow}` }}>
               <TransactionTable
                 rows={transactions.slice(0, 5)}
                 onEdit={openEdit}
@@ -467,14 +467,14 @@ export default function Dashboard({ user, onLogout }) {
 
         {/* ── View: Ledger ── */}
         {view === 'ledger' && (
-          <div style={{ padding: '24px 24px 64px', maxWidth: 1440, margin: '0 auto' }}>
+          <div className="dashboard-content" style={{ padding: '24px 24px 64px', maxWidth: 1440, margin: '0 auto' }}>
             <div style={{ marginBottom: 16 }}>
               <div style={{ fontSize: 24, fontWeight: 800, letterSpacing: '-0.04em', color: C.ink }}>Buku kas</div>
               <div style={{ marginTop: 6, fontSize: 13, color: C.inkFaint }}>Cari, filter, dan audit transaksi dalam satu tampilan.</div>
             </div>
 
             {/* Filters */}
-            <div style={{ display: 'flex', gap: 12, marginBottom: 18, alignItems: 'center', flexWrap: 'wrap' }}>
+            <div className="dashboard-filters" style={{ display: 'flex', gap: 12, marginBottom: 18, alignItems: 'center', flexWrap: 'wrap' }}>
               <div style={{ position: 'relative', flex: 1, minWidth: 260, maxWidth: 360 }}>
                 <Search size={14} style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', color: C.inkFaint, pointerEvents: 'none' }} />
                 <input
@@ -508,7 +508,7 @@ export default function Dashboard({ user, onLogout }) {
               </span>
             </div>
 
-            <div style={{ border: `1px solid ${C.rule}`, borderRadius: 28, overflow: 'hidden', background: C.surface, boxShadow: `0 18px 50px ${C.shadow}` }}>
+            <div className="dashboard-table-wrap" style={{ border: `1px solid ${C.rule}`, borderRadius: 28, overflow: 'hidden', background: C.surface, boxShadow: `0 18px 50px ${C.shadow}` }}>
               <TransactionTable rows={filtered} onEdit={openEdit} onDelete={handleDelete} />
             </div>
           </div>
@@ -517,12 +517,12 @@ export default function Dashboard({ user, onLogout }) {
 
       {/* ── Modal ── */}
       {showModal && (
-        <div style={{
+        <div className="dashboard-modal" style={{
           position: 'fixed', inset: 0, background: 'rgba(15,23,42,0.62)', backdropFilter: 'blur(10px)',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
           zIndex: 50, padding: 16,
         }}>
-          <div style={{ background: C.surface, borderRadius: 28, width: '100%', maxWidth: 500, overflow: 'hidden', boxShadow: '0 28px 80px rgba(15,23,42,0.28)', border: `1px solid ${C.rule}` }}>
+          <div className="dashboard-modal-card" style={{ background: C.surface, borderRadius: 28, width: '100%', maxWidth: 500, overflow: 'hidden', boxShadow: '0 28px 80px rgba(15,23,42,0.28)', border: `1px solid ${C.rule}` }}>
 
             {/* Modal header */}
             <div style={{ padding: '22px 24px', borderBottom: `1px solid ${C.rule}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: 'linear-gradient(180deg, #ffffff 0%, #f8fafc 100%)' }}>
@@ -568,7 +568,7 @@ export default function Dashboard({ user, onLogout }) {
               </ModalField>
 
               {/* Category + Date side by side */}
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+              <div className="modal-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
                 <ModalField label="Kategori">
                   <select value={fCategory} onChange={e => setFCategory(e.target.value)} style={{ ...inputStyle, cursor: 'pointer', background: '#fff' }}>
                     {CATEGORIES[fType].map(c => <option key={c}>{c}</option>)}
@@ -642,7 +642,7 @@ function TransactionTable({ rows, onEdit, onDelete }) {
   );
 
   return (
-    <table style={{ width: '100%', borderCollapse: 'collapse', fontFamily: 'var(--font-sans)' }}>
+    <table className="ledger-table" style={{ width: '100%', borderCollapse: 'collapse', fontFamily: 'var(--font-sans)' }}>
       <thead>
         <tr style={{ background: '#f8fafc' }}>
           {['Tanggal', 'Keterangan', 'Kategori', 'Jumlah', ''].map(h => (
