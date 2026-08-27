@@ -22,9 +22,9 @@ const ICONS = {
 };
 
 const COLORS = {
-  income: 'bg-emerald-50 text-emerald-600 border-emerald-100',
-  expense: 'bg-rose-50 text-rose-600 border-rose-100',
-  balance: 'bg-indigo-50 text-indigo-600 border-indigo-100',
+  income: 'bg-emerald-50 dark:bg-emerald-950/50 text-emerald-600 dark:text-emerald-400 border-emerald-100 dark:border-emerald-800',
+  expense: 'bg-rose-50 dark:bg-rose-950/50 text-rose-600 dark:text-rose-400 border-rose-100 dark:border-rose-800',
+  balance: 'bg-indigo-50 dark:bg-indigo-950/50 text-indigo-600 dark:text-indigo-400 border-indigo-100 dark:border-indigo-800',
 };
 
 const LABELS = {
@@ -48,7 +48,7 @@ export function StatCard({ type, value, trend, trendLabel, index = 0, animate = 
     >
       <div className="flex items-start justify-between">
         <div>
-          <p className="text-xs font-bold uppercase tracking-wider text-slate-500 mb-3">{label}</p>
+          <p className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-3">{label}</p>
           <motion.p
             className="font-mono font-bold text-2xl sm:text-3xl tabular-nums"
             initial={false}
@@ -58,7 +58,7 @@ export function StatCard({ type, value, trend, trendLabel, index = 0, animate = 
             {value}
           </motion.p>
         </div>
-        <div className={cn('w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0', colorClass.replace('50', '100').replace('600', '500'))}>
+        <div className={cn('w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0', colorClass.replace('50', '100').replace('600', '500').replace('950/50', '900/50'))}>
           {icon}
         </div>
       </div>
@@ -70,10 +70,10 @@ export function StatCard({ type, value, trend, trendLabel, index = 0, animate = 
           animate={{ opacity: 1, x: 0 }}
           transition={{ delay: 0.25 + index * 0.08, duration: 0.3 }}
         >
-          <span className={cn('text-xs font-semibold', trend >= 0 ? 'text-emerald-600' : 'text-rose-600')}>
+          <span className={cn('text-xs font-semibold', trend >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400')}>
             {trend >= 0 ? '↑' : '↓'} {Math.abs(trend)}%
           </span>
-          <span className="text-xs text-slate-500">{trendLabel}</span>
+          <span className="text-xs text-slate-500 dark:text-slate-400">{trendLabel}</span>
         </motion.div>
       )}
     </motion.div>

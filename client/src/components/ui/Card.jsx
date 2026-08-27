@@ -4,11 +4,11 @@ import { cn } from '@/lib/utils';
 
 const Card = forwardRef(({ className, children, variant = 'default', padding = 'md', hover, animate = true, ...props }, ref) => {
   const variants = {
-    default: 'bg-white border border-slate-200/70 shadow-sm',
-    elevated: 'bg-white border border-slate-200/50 shadow-md',
-    hero: 'bg-slate-900 border-0 shadow-lg',
-    subtle: 'bg-slate-50/50 border border-slate-100',
-    glass: 'bg-white/80 backdrop-blur-md border border-slate-200/60',
+    default: 'bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-sm',
+    elevated: 'bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700/50 shadow-md',
+    hero: 'bg-slate-900 dark:bg-slate-800 border-0 shadow-lg',
+    subtle: 'bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-700/50',
+    glass: 'bg-white/80 dark:bg-slate-800/80 backdrop-blur-md border border-slate-200/60 dark:border-slate-700/60',
   };
 
   const paddings = {
@@ -46,13 +46,13 @@ export const CardHeader = forwardRef(({ className, children, ...props }, ref) =>
 CardHeader.displayName = 'CardHeader';
 
 export const CardTitle = ({ className, children, ...props }) => (
-  <h3 className={cn('text-lg font-bold text-slate-900 tracking-tight', className)} {...props}>
+  <h3 className={cn('text-lg font-bold text-slate-900 dark:text-white tracking-tight', className)} {...props}>
     {children}
   </h3>
 );
 
 export const CardDescription = ({ className, children, ...props }) => (
-  <p className={cn('mt-1 text-sm text-slate-500', className)} {...props}>
+  <p className={cn('mt-1 text-sm text-slate-500 dark:text-slate-400', className)} {...props}>
     {children}
   </p>
 );
@@ -66,7 +66,7 @@ export const CardContent = forwardRef(({ className, children, ...props }, ref) =
 CardContent.displayName = 'CardContent';
 
 export const CardFooter = forwardRef(({ className, children, ...props }, ref) => (
-  <div ref={ref} className={cn('mt-4 pt-4 border-t border-slate-100 flex items-center gap-3', className)} {...props}>
+  <div ref={ref} className={cn('mt-4 pt-4 border-t border-slate-100 dark:border-slate-700 flex items-center gap-3', className)} {...props}>
     {children}
   </div>
 ));

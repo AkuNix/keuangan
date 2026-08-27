@@ -10,7 +10,7 @@ const NAV_ITEMS = [
   { id: 'ledger', icon: List, label: 'Buku Kas' },
 ];
 
-export function Sidebar({ isOpen, onClose, activeView, onNavigate, user }) {
+export function Sidebar({ isOpen, onClose, activeView, onNavigate, user, onLogout }) {
   return (
     <Fragment>
       <AnimatePresence>
@@ -105,7 +105,7 @@ export function Sidebar({ isOpen, onClose, activeView, onNavigate, user }) {
             </div>
           </div>
           <button
-            onClick={onClose}
+            onClick={onLogout}
             className={cn(
               'w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold transition-all duration-150',
               'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-500/30 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900',

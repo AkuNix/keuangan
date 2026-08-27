@@ -37,7 +37,7 @@ export function Modal({ isOpen, onClose, title, description, children, size = 'm
         <Fragment>
           <motion.div
             ref={overlayRef}
-            className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50"
+            className="fixed inset-0 bg-slate-900/60 dark:bg-slate-950/80 backdrop-blur-sm z-50"
             variants={modalOverlay}
             initial="hidden"
             animate="visible"
@@ -49,7 +49,7 @@ export function Modal({ isOpen, onClose, title, description, children, size = 'm
             ref={contentRef}
             className={cn(
               'fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-full z-50',
-              'bg-white rounded-2xl shadow-xl',
+              'bg-white dark:bg-slate-800 rounded-2xl shadow-xl',
               sizes[size],
               className
             )}
@@ -65,15 +65,15 @@ export function Modal({ isOpen, onClose, title, description, children, size = 'm
             onClick={(e) => e.stopPropagation()}
           >
             {(title || showClose) && (
-              <div className="flex items-start justify-between p-6 border-b border-slate-100">
+              <div className="flex items-start justify-between p-6 border-b border-slate-100 dark:border-slate-700">
                 <div>
                   {title && (
-                    <h2 id="modal-title" className="text-lg font-bold text-slate-900">
+                    <h2 id="modal-title" className="text-lg font-bold text-slate-900 dark:text-white">
                       {title}
                     </h2>
                   )}
                   {description && (
-                    <p id="modal-description" className="mt-1 text-sm text-slate-500">
+                    <p id="modal-description" className="mt-1 text-sm text-slate-500 dark:text-slate-400">
                       {description}
                     </p>
                   )}
@@ -81,7 +81,7 @@ export function Modal({ isOpen, onClose, title, description, children, size = 'm
                 {showClose && (
                   <button
                     onClick={onClose}
-                    className="p-1.5 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500/30"
+                    className="p-1.5 rounded-lg text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500/30"
                     aria-label="Tutup"
                   >
                     <X size={18} strokeWidth={2} />
@@ -99,7 +99,7 @@ export function Modal({ isOpen, onClose, title, description, children, size = 'm
 
 export function ModalFooter({ children, className }) {
   return (
-    <div className={cn('mt-6 pt-4 border-t border-slate-100 flex items-center justify-end gap-3', className)}>
+    <div className={cn('mt-6 pt-4 border-t border-slate-100 dark:border-slate-700 flex items-center justify-end gap-3', className)}>
       {children}
     </div>
   );

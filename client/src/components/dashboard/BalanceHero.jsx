@@ -14,7 +14,7 @@ export function BalanceHero({ stats, animate = true }) {
 
   return (
     <motion.div
-      className="relative overflow-hidden rounded-2xl bg-slate-900 p-6 sm:p-8 lg:p-10 text-white"
+      className="relative overflow-hidden rounded-2xl bg-slate-900 dark:bg-gradient-to-br dark:from-slate-800 dark:to-slate-900 p-6 sm:p-8 lg:p-10 text-white"
       initial={animate ? { opacity: 0, y: 20 } : false}
       animate={animate ? { opacity: 1, y: 0 } : false}
       transition={{ duration: 0.5, ease: [0.25, 0.46, 0.45, 0.94] }}

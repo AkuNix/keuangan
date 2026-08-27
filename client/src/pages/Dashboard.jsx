@@ -57,10 +57,7 @@ export default function Dashboard({ user, onLogout }) {
     return 0;
   });
 
-  const openEdit = (tx) => {
-    setEditingTx(tx);
-    setShowModal(true);
-  };
+  const openEdit = (tx) => { setEditingTx(tx); setShowModal(true); };
 
   const handleSubmit = async (payload) => {
     try {
@@ -68,135 +65,56 @@ export default function Dashboard({ user, onLogout }) {
       else await api.addTransaction(payload);
       setShowModal(false);
       fetchData();
-    } catch (err) {
-      alert(err.message);
-    }
+    } catch (err) { alert(err.message); }
   };
 
-  const confirmDelete = (tx) => {
-    setDeletingTx(tx);
-    setShowDeleteModal(true);
-  };
+  const confirmDelete = (tx) => { setDeletingTx(tx); setShowDeleteModal(true); };
 
   const handleDelete = async () => {
     if (!deletingTx) return;
-    try {
-      await api.deleteTransaction(deletingTx.id);
-      fetchData();
-    } catch (err) {
-      alert(err.message);
-    } finally {
-      setShowDeleteModal(false);
-      setDeletingTx(null);
-    }
-  };
-
-  const pageTitles = {
-    dashboard: 'Dashboard',
-    ledger: 'Buku Kas',
+    try { await api.deleteTransaction(deletingTx.id); fetchData(); }
+    catch (err) { alert(err.message); }
+    finally { setShowDeleteModal(false); setDeletingTx(null); }
   };
 
   return (
-    <PageShell
-      user={user}
-      onLogout={onLogout}
-      activeView={view}
-      onNavigate={setView}
-      pageTitle={pageTitles[view]}
-    >
+    <PageShell user={user} onLogout={onLogout} activeView={view} onNavigate={setView} pageTitle={view === 'dashboard' ? 'Dashboard' : 'Buku Kas'}>
       {view === 'dashboard' && (
-        <>
-          <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.4 }}
-          >
+        <div className="space-y-6">
+          <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }}>
             <BalanceHero stats={stats} />
           </motion.div>
-
-          <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.4, delay: 0.05 }}
-          >
+          <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, delay: 0.05 }}>
             <StatCardsGrid stats={stats} />
           </motion.div>
-
-          <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.4, delay: 0.1 }}
-          >
+          <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, delay: 0.1 }}>
             <ChartsArea stats={stats} />
           </motion.div>
-
-          <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.4, delay: 0.15 }}
-          >
+          <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, delay: 0.15 }}>
             <div className="flex items-center justify-between mb-4">
-              <h2 className="text-lg font-bold text-slate-900">Transaksi Terbaru</h2>
-              <button
-                onClick={() => setView('ledger')}
-                className="text-sm font-semibold text-indigo-600 hover:text-indigo-700 flex items-center gap-1"
-              >
-                Lihat semua
-                <ChevronDown size={16} strokeWidth={2} />
+              <h2 className="text-lg font-bold text-slate-900 dark:text-white">Transaksi Terbaru</h2>
+              <button onClick={() => setView('ledger')} className="text-sm font-semibold text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 flex items-center gap-1">
+                Lihat semua<ChevronDown size={16} strokeWidth={2} />
               </button>
             </div>
-            <div className="hidden lg:block">
-              <TransactionTable rows={filtered.slice(0, 10)} onEdit={openEdit} onDelete={confirmDelete} loading={loading} />
-            </div>
-            <div className="lg:hidden">
-              <TransactionMobileList rows={filtered.slice(0, 10)} onEdit={openEdit} onDelete={confirmDelete} loading={loading} />
-            </div>
+            <div className="hidden lg:block"><TransactionTable rows={filtered.slice(0, 10)} onEdit={openEdit} onDelete={confirmDelete} loading={loading} /></div>
+            <div className="lg:hidden"><TransactionMobileList rows={filtered.slice(0, 10)} onEdit={openEdit} onDelete={confirmDelete} loading={loading} /></div>
           </motion.div>
-        </>
+        </div>
       )}
 
       {view === 'ledger' && (
-        <motion.div
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.4 }}
-        >
-          <FilterBar
-            search={search}
-            onSearchChange={setSearch}
-            typeFilter={typeFilter}
-            onTypeFilterChange={setTypeFilter}
-            sortBy={sortBy}
-            onSortChange={setSortBy}
-            resultCount={filtered.length}
-          />
-
+        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }}>
+          <FilterBar search={search} onSearchChange={setSearch} typeFilter={typeFilter} onTypeFilterChange={setTypeFilter} sortBy={sortBy} onSortChange={setSortBy} resultCount={filtered.length} />
           <div className="mt-4">
-            <div className="hidden lg:block">
-              <TransactionTable rows={filtered} onEdit={openEdit} onDelete={confirmDelete} loading={loading} />
-            </div>
-            <div className="lg:hidden">
-              <TransactionMobileList rows={filtered} onEdit={openEdit} onDelete={confirmDelete} loading={loading} />
-            </div>
+            <div className="hidden lg:block"><TransactionTable rows={filtered} onEdit={openEdit} onDelete={confirmDelete} loading={loading} /></div>
+            <div className="lg:hidden"><TransactionMobileList rows={filtered} onEdit={openEdit} onDelete={confirmDelete} loading={loading} /></div>
           </div>
         </motion.div>
       )}
 
-      <TransactionModal
-        isOpen={showModal}
-        onClose={() => { setShowModal(false); setEditingTx(null); }}
-        editingTx={editingTx}
-        onSubmit={handleSubmit}
-        submitting={false}
-      />
-
-      <DeleteConfirmModal
-        isOpen={showDeleteModal}
-        onClose={() => { setShowDeleteModal(false); setDeletingTx(null); }}
-        onConfirm={handleDelete}
-        transaction={deletingTx}
-        loading={false}
-      />
+      <TransactionModal isOpen={showModal} onClose={() => { setShowModal(false); setEditingTx(null); }} editingTx={editingTx} onSubmit={handleSubmit} submitting={false} />
+      <DeleteConfirmModal isOpen={showDeleteModal} onClose={() => { setShowDeleteModal(false); setDeletingTx(null); }} onConfirm={handleDelete} transaction={deletingTx} loading={false} />
     </PageShell>
   );
 }

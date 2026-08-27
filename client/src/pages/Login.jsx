@@ -3,7 +3,8 @@ import { motion } from 'framer-motion';
 import { api } from '../api';
 import { Button, Input } from '@/components/ui';
 import { formatDate } from '@/lib/utils';
-import { BookOpen, ShieldCheck, BarChart3, ArrowRight } from 'lucide-react';
+import { useTheme } from '@/hooks/useTheme';
+import { BookOpen, ShieldCheck, BarChart3, ArrowRight, Sun, Moon } from 'lucide-react';
 
 export default function Login({ onLoginSuccess }) {
   const [isRegister, setIsRegister] = useState(false);
@@ -12,6 +13,7 @@ export default function Login({ onLoginSuccess }) {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const { theme, toggleTheme } = useTheme();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -31,10 +33,10 @@ export default function Login({ onLoginSuccess }) {
   };
 
   return (
-    <main className="login-shell min-h-screen bg-slate-50 flex items-center justify-center p-4">
+    <main className="login-shell min-h-screen bg-slate-50 dark:bg-slate-950 flex items-center justify-center p-4">
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute -top-40 -right-40 w-80 h-80 bg-indigo-600/10 rounded-full blur-3xl" />
-        <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-emerald-600/10 rounded-full blur-3xl" />
+        <div className="absolute -top-40 -right-40 w-80 h-80 bg-indigo-600/10 dark:bg-indigo-500/20 rounded-full blur-3xl" />
+        <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-emerald-600/10 dark:bg-emerald-500/20 rounded-full blur-3xl" />
       </div>
 
       <motion.div
@@ -43,8 +45,24 @@ export default function Login({ onLoginSuccess }) {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5, ease: [0.25, 0.46, 0.45, 0.94] }}
       >
+        <div className="absolute -top-2 -right-2 z-10">
+          <motion.button
+            onClick={toggleTheme}
+            className="p-2.5 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-sm hover:shadow-md transition-all"
+            whileTap={{ scale: 0.9 }}
+            whileHover={{ scale: 1.05 }}
+            aria-label={theme === 'dark' ? 'Mode terang' : 'Mode gelap'}
+          >
+            {theme === 'dark' ? (
+              <Sun size={18} className="text-amber-400" />
+            ) : (
+              <Moon size={18} className="text-slate-500" />
+            )}
+          </motion.button>
+        </div>
+
         <motion.div
-          className="bg-slate-900 rounded-2xl p-6 mb-6 text-white overflow-hidden"
+          className="bg-slate-900 dark:bg-slate-800 rounded-2xl p-6 mb-6 text-white overflow-hidden"
           initial={false}
           animate={{ opacity: 1, x: 0 }}
           transition={{ delay: 0.1, duration: 0.4 }}
@@ -86,16 +104,16 @@ export default function Login({ onLoginSuccess }) {
         </motion.div>
 
         <motion.div
-          className="bg-white border border-slate-200 rounded-2xl shadow-sm p-6 sm:p-8"
+          className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl shadow-sm p-6 sm:p-8"
           initial={false}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.15, duration: 0.4 }}
         >
           <div className="mb-8">
-            <h2 className="text-2xl font-bold text-slate-900 tracking-tight">
+            <h2 className="text-2xl font-bold text-slate-900 dark:text-white tracking-tight">
               {isRegister ? 'Buat akun baru' : 'Selamat datang kembali'}
             </h2>
-            <p className="mt-2 text-sm text-slate-500">
+            <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">
               {isRegister ? 'Mulai catat keuangan dalam hitungan detik.' : 'Masuk untuk melanjutkan ke dashboard.'}
             </p>
           </div>
@@ -104,14 +122,14 @@ export default function Login({ onLoginSuccess }) {
             <button
               type="button"
               onClick={() => { setIsRegister(false); setError(''); }}
-              className="flex-1 py-2.5 rounded-xl text-sm font-semibold transition-all duration-150 bg-slate-900 text-white shadow-sm"
+              className="flex-1 py-2.5 rounded-xl text-sm font-semibold transition-all duration-150 bg-slate-900 dark:bg-indigo-600 text-white shadow-sm"
             >
               Masuk
             </button>
             <button
               type="button"
               onClick={() => { setIsRegister(true); setError(''); }}
-              className="flex-1 py-2.5 rounded-xl text-sm font-semibold transition-all duration-150 text-slate-500 hover:bg-slate-50 hover:text-slate-700"
+              className="flex-1 py-2.5 rounded-xl text-sm font-semibold transition-all duration-150 text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-700 hover:text-slate-700 dark:hover:text-slate-200"
             >
               Daftar
             </button>
@@ -119,7 +137,7 @@ export default function Login({ onLoginSuccess }) {
 
           {error && (
             <motion.div
-              className="mb-6 p-3 bg-rose-50 border border-rose-200 rounded-xl text-sm text-rose-700 flex items-start gap-2"
+              className="mb-6 p-3 bg-rose-50 dark:bg-rose-900/30 border border-rose-200 dark:border-rose-800 rounded-xl text-sm text-rose-700 dark:text-rose-300 flex items-start gap-2"
               initial={{ opacity: 0, y: -10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.2 }}
@@ -176,7 +194,7 @@ export default function Login({ onLoginSuccess }) {
           </form>
 
           <motion.p
-            className="mt-6 text-center text-xs text-slate-500 flex items-center justify-center gap-1.5"
+            className="mt-6 text-center text-xs text-slate-500 dark:text-slate-400 flex items-center justify-center gap-1.5"
             initial={false}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.3 }}

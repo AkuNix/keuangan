@@ -3,6 +3,7 @@ import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
 import { api } from './api';
 import { motion } from 'framer-motion';
+import { ThemeProvider } from './hooks/useTheme';
 
 function App() {
   const [user, setUser] = useState(null);
@@ -37,38 +38,40 @@ function App() {
 
   if (loading) {
     return (
-      <motion.div
-        className="min-h-screen flex items-center justify-center bg-slate-50"
-        initial={false}
-        animate={{ opacity: 1 }}
-      >
-        <div className="text-center">
-          <motion.div
-            className="w-12 h-12 border-4 border-slate-200 border-t-indigo-600 rounded-full mx-auto"
-            animate={{ rotate: 360 }}
-            transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
-          />
-          <motion.p
-            className="mt-4 text-sm font-semibold text-slate-600"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.2 }}
-          >
-            Memuat aplikasi...
-          </motion.p>
-        </div>
-      </motion.div>
+      <ThemeProvider>
+        <motion.div
+          className="min-h-screen flex items-center justify-center bg-slate-50 dark:bg-slate-950"
+          initial={false}
+          animate={{ opacity: 1 }}
+        >
+          <div className="text-center">
+            <motion.div
+              className="w-12 h-12 border-4 border-slate-200 dark:border-slate-700 border-t-indigo-600 rounded-full mx-auto"
+              animate={{ rotate: 360 }}
+              transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
+            />
+            <motion.p
+              className="mt-4 text-sm font-semibold text-slate-600 dark:text-slate-400"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.2 }}
+            >
+              Memuat aplikasi...
+            </motion.p>
+          </div>
+        </motion.div>
+      </ThemeProvider>
     );
   }
 
   return (
-    <>
+    <ThemeProvider>
       {user ? (
         <Dashboard user={user} onLogout={handleLogout} />
       ) : (
         <Login onLoginSuccess={handleLoginSuccess} />
       )}
-    </>
+    </ThemeProvider>
   );
 }
 

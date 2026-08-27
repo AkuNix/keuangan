@@ -46,7 +46,7 @@ export function TransactionModal({
   }, [isOpen, editingTx]);
 
   useEffect(() => {
-    if (formData.type && !CATEGORIES[formData.type].includes(formData.category)) {
+    if (formData.type && CATEGORIES[formData.type] && !CATEGORIES[formData.type].includes(formData.category)) {
       setFormData(prev => ({ ...prev, category: CATEGORIES[formData.type][0] }));
     }
   }, [formData.type, formData.category]);
@@ -79,7 +79,7 @@ export function TransactionModal({
     >
       <form onSubmit={handleSubmit} className="space-y-4" noValidate>
         <motion.div
-          className="grid grid-cols-2 gap-2 p-1 bg-slate-100 rounded-xl"
+          className="grid grid-cols-2 gap-2 p-1 bg-slate-100 dark:bg-slate-800 rounded-xl"
           initial={false}
           animate={{ opacity: 1 }}
         >
@@ -91,8 +91,8 @@ export function TransactionModal({
               className={cn(
                 'flex items-center justify-center gap-2 py-2.5 px-3 rounded-lg text-sm font-semibold transition-all duration-150',
                 formData.type === type
-                  ? (type === 'INCOME' ? 'bg-white text-emerald-600 shadow-sm' : 'bg-white text-rose-600 shadow-sm')
-                  : 'text-slate-500 hover:text-slate-700'
+                  ? (type === 'INCOME' ? 'bg-white dark:bg-slate-700 text-emerald-600 shadow-sm' : 'bg-white dark:bg-slate-700 text-rose-600 shadow-sm')
+                  : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'
               )}
               aria-pressed={formData.type === type}
             >
@@ -162,6 +162,8 @@ export function TransactionModal({
 }
 
 export function DeleteConfirmModal({ isOpen, onClose, onConfirm, transaction, loading }) {
+  if (!transaction) return null;
+
   const isIncome = transaction.type === 'INCOME';
 
   return (
@@ -173,12 +175,12 @@ export function DeleteConfirmModal({ isOpen, onClose, onConfirm, transaction, lo
       size="sm"
     >
       <div className="space-y-4">
-        <div className="flex items-center gap-3 p-4 bg-slate-50 rounded-xl">
-          <div className={cn('w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0', isIncome ? 'bg-emerald-50' : 'bg-rose-50')}>
+        <div className="flex items-center gap-3 p-4 bg-slate-50 dark:bg-slate-800 rounded-xl">
+          <div className={cn('w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0', isIncome ? 'bg-emerald-50 dark:bg-emerald-900/30' : 'bg-rose-50 dark:bg-rose-900/30')}>
             {isIncome ? <ArrowUpRight size={20} className="text-emerald-500" /> : <ArrowDownRight size={20} className="text-rose-500" />}
           </div>
           <div className="flex-1 min-w-0">
-            <p className="font-medium text-slate-900 truncate">{transaction.description || 'Tanpa keterangan'}</p>
+            <p className="font-medium text-slate-900 dark:text-white truncate">{transaction.description || 'Tanpa keterangan'}</p>
             <div className="flex items-center gap-2 mt-1 text-sm text-slate-500">
               <Badge variant={isIncome ? 'income' : 'expense'} size="sm">{transaction.category}</Badge>
               <span className="font-mono">{formatDate(transaction.date)}</span>
@@ -189,7 +191,7 @@ export function DeleteConfirmModal({ isOpen, onClose, onConfirm, transaction, lo
           </span>
         </div>
 
-        <p className="text-slate-600 text-sm">
+        <p className="text-slate-600 dark:text-slate-400 text-sm">
           Yakin ingin menghapus transaksi ini? Data akan hilang permanen.
         </p>
       </div>

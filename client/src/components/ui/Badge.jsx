@@ -2,15 +2,15 @@ import { cn } from '@/lib/utils';
 
 export function Badge({ className, variant = 'default', size = 'md', children, dot, ...props }) {
   const variants = {
-    default: 'bg-slate-100 text-slate-700 border border-slate-200',
-    primary: 'bg-indigo-50 text-indigo-700 border border-indigo-100',
-    success: 'bg-emerald-50 text-emerald-700 border border-emerald-100',
-    warning: 'bg-amber-50 text-amber-700 border border-amber-100',
-    danger: 'bg-rose-50 text-rose-700 border border-rose-100',
-    income: 'bg-emerald-50 text-emerald-700 border border-emerald-100',
-    expense: 'bg-rose-50 text-rose-700 border border-rose-100',
-    active: 'bg-emerald-50 text-emerald-700 border border-emerald-100',
-    inactive: 'bg-slate-100 text-slate-600 border border-slate-200',
+    default: 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700',
+    primary: 'bg-indigo-50 dark:bg-indigo-950/50 text-indigo-700 dark:text-indigo-400 border border-indigo-100 dark:border-indigo-800',
+    success: 'bg-emerald-50 dark:bg-emerald-950/50 text-emerald-700 dark:text-emerald-400 border border-emerald-100 dark:border-emerald-800',
+    warning: 'bg-amber-50 dark:bg-amber-950/50 text-amber-700 dark:text-amber-400 border border-amber-100 dark:border-amber-800',
+    danger: 'bg-rose-50 dark:bg-rose-950/50 text-rose-700 dark:text-rose-400 border border-rose-100 dark:border-rose-800',
+    income: 'bg-emerald-50 dark:bg-emerald-950/50 text-emerald-700 dark:text-emerald-400 border border-emerald-100 dark:border-emerald-800',
+    expense: 'bg-rose-50 dark:bg-rose-950/50 text-rose-700 dark:text-rose-400 border border-rose-100 dark:border-rose-800',
+    active: 'bg-emerald-50 dark:bg-emerald-950/50 text-emerald-700 dark:text-emerald-400 border border-emerald-100 dark:border-emerald-800',
+    inactive: 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-slate-700',
   };
 
   const sizes = {

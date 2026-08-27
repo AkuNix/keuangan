@@ -1,5 +1,7 @@
 @import "tailwindcss";
 
+@custom-variant dark (&:where(.dark, .dark *));
+
 @theme {
   --color-canvas: #f5f3ef;
   --color-surface: #ffffff;
@@ -40,6 +42,12 @@
     -webkit-font-smoothing: antialiased;
   }
 
+  .dark body,
+  body.dark {
+    background: #0f172a;
+    color: #e2e8f0;
+  }
+
   ::selection { background: var(--color-accent); color: #fff; }
 
   input, textarea, select { font-family: inherit; caret-color: var(--color-accent); }
@@ -71,60 +79,6 @@
   .text-pretty { text-wrap: pretty; }
 }
 
-@layer components {
-  .btn-primary {
-    @apply inline-flex items-center justify-center gap-2 px-4 py-2 text-sm font-semibold rounded-xl bg-indigo-600 text-white hover:bg-indigo-700 active:bg-indigo-800 shadow-sm transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500/30 focus-visible:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed;
-  }
-
-  .btn-secondary {
-    @apply inline-flex items-center justify-center gap-2 px-4 py-2 text-sm font-semibold rounded-xl bg-white text-slate-700 border border-slate-200 hover:bg-slate-50 active:bg-slate-100 transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500/30 focus-visible:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed;
-  }
-
-  .btn-ghost {
-    @apply inline-flex items-center justify-center gap-2 px-4 py-2 text-sm font-semibold rounded-xl text-slate-600 hover:bg-slate-100 active:bg-slate-200 transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500/30 focus-visible:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed;
-  }
-
-  .btn-danger {
-    @apply inline-flex items-center justify-center gap-2 px-4 py-2 text-sm font-semibold rounded-xl bg-rose-600 text-white hover:bg-rose-700 active:bg-rose-800 shadow-sm transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-500/30 focus-visible:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed;
-  }
-
-  .input-base {
-    @apply w-full px-3 py-2.5 bg-white border border-slate-200 rounded-xl text-sm text-slate-900 placeholder:text-slate-400 transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 hover:border-slate-300 disabled:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-60;
-  }
-
-  .input-error {
-    @apply border-rose-300 focus:border-rose-500 focus:ring-rose-500/20;
-  }
-
-  .card-base {
-    @apply bg-white border border-slate-200/70 rounded-2xl shadow-sm transition-shadow duration-200;
-  }
-
-  .card-elevated {
-    @apply bg-white border border-slate-200/50 rounded-2xl shadow-md transition-shadow duration-200;
-  }
-
-  .card-hero {
-    @apply bg-slate-900 border-0 rounded-2xl shadow-lg;
-  }
-
-  .badge-base {
-    @apply inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-semibold rounded-full border transition-colors;
-  }
-
-  .sidebar-link {
-    @apply w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500/30 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900;
-  }
-
-  .sidebar-link-active {
-    @apply bg-white/10 text-white;
-  }
-
-  .sidebar-link-inactive {
-    @apply text-slate-400 hover:bg-white/5 hover:text-white;
-  }
-}
-
 /* Recharts customizations */
 .recharts-tooltip-wrapper { outline: none; }
 .recharts-default-tooltip { border-radius: 12px !important; box-shadow: 0 4px 16px rgba(0,0,0,0.1) !important; }
@@ -135,6 +89,30 @@
 }
 
 .animate-spin { animation: spin 1s linear infinite; }
+
+/* Dark mode transitions */
+html.dark {
+  color-scheme: dark;
+}
+
+html.dark body {
+  background-color: #0f172a;
+  color: #e2e8f0;
+}
+
+html.light {
+  color-scheme: light;
+}
+
+html.light body {
+  background-color: #f5f3ef;
+  color: #1a1a1a;
+}
+
+/* Smooth theme transition */
+html {
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
 
 /* Reduced motion */
 @media (prefers-reduced-motion: reduce) {
