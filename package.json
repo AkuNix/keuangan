@@ -1,0 +1,8 @@
+{
+  "name": "keuangan",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "vercel-build": "cd api && npx prisma generate && cd ../client && npm run build"
+  }
+}
