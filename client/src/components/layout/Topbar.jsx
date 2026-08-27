@@ -1,4 +1,5 @@
-import { motion } from 'framer-motion';
+import { useState, useRef, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { fadeDown } from '@/lib/animations';
 import { Menu, Bell, ChevronDown, Sun, Moon } from 'lucide-react';
 import { useClock } from '@/hooks/useClock';
@@ -9,6 +10,19 @@ import { Button } from '@/components/ui';
 export function Topbar({ onMenuClick, user, onLogout, title }) {
   const now = useClock();
   const { theme, toggleTheme } = useTheme();
+  const [userMenuOpen, setUserMenuOpen] = useState(false);
+  const [notifOpen, setNotifOpen] = useState(false);
+  const userMenuRef = useRef(null);
+  const notifRef = useRef(null);
+
+  useEffect(() => {
+    function handleClickOutside(e) {
+      if (userMenuRef.current && !userMenuRef.current.contains(e.target)) setUserMenuOpen(false);
+      if (notifRef.current && !notifRef.current.contains(e.target)) setNotifOpen(false);
+    }
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
   const timeString = now.toLocaleTimeString('id-ID', {
     hour: '2-digit',
@@ -85,47 +99,85 @@ export function Topbar({ onMenuClick, user, onLogout, title }) {
               </motion.div>
             </motion.button>
 
-            <div className="relative">
+            {/* Notification — click-based */}
+            <div className="relative" ref={notifRef}>
               <button
-                className="flex items-center gap-2 p-1.5 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500/30"
+                onClick={() => setNotifOpen(!notifOpen)}
+                className="p-2 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500/30"
                 aria-label="Notifikasi"
               >
                 <Bell size={20} strokeWidth={2} className="text-slate-500 dark:text-slate-400" />
-                <span className="absolute -top-1 -right-1 w-4 h-4 bg-rose-500 rounded-full text-[10px] font-bold text-white flex items-center justify-center">3</span>
+                <span className="absolute -top-0.5 -right-0.5 w-4 h-4 bg-rose-500 rounded-full text-[10px] font-bold text-white flex items-center justify-center">3</span>
               </button>
+              <AnimatePresence>
+                {notifOpen && (
+                  <motion.div
+                    className="absolute right-0 top-full mt-2 w-72 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl shadow-lg py-1 z-50"
+                    initial={{ opacity: 0, y: -8, scale: 0.96 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={{ opacity: 0, y: -8, scale: 0.96 }}
+                    transition={{ duration: 0.15 }}
+                  >
+                    <div className="px-4 py-3 border-b border-slate-100 dark:border-slate-700">
+                      <p className="text-sm font-bold text-slate-900 dark:text-white">Notifikasi</p>
+                    </div>
+                    <div className="px-4 py-6 text-center">
+                      <Bell size={32} className="mx-auto text-slate-300 dark:text-slate-600 mb-2" />
+                      <p className="text-sm text-slate-500 dark:text-slate-400">Belum ada notifikasi</p>
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </div>
 
-            <div className="relative group">
+            {/* User menu — click-based */}
+            <div className="relative" ref={userMenuRef}>
               <button
+                onClick={() => setUserMenuOpen(!userMenuOpen)}
                 className="flex items-center gap-2 px-3 py-1.5 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500/30"
                 aria-label="Menu pengguna"
+                aria-expanded={userMenuOpen}
               >
                 <div className="w-8 h-8 rounded-lg bg-indigo-100 dark:bg-indigo-900/30 flex items-center justify-center flex-shrink-0">
                   <span className="text-xs font-bold text-indigo-700 dark:text-indigo-300 font-mono">{getInitials(user?.name)}</span>
                 </div>
                 <span className="hidden sm:block text-sm font-semibold text-slate-700 dark:text-slate-300 truncate max-w-[120px]">{user?.name}</span>
-                <ChevronDown size={16} strokeWidth={2.5} className="text-slate-400 dark:text-slate-500 hidden sm:block" />
+                <ChevronDown size={16} strokeWidth={2.5} className={cn('text-slate-400 dark:text-slate-500 hidden sm:block transition-transform', userMenuOpen && 'rotate-180')} />
               </button>
 
-              <div className="absolute right-0 top-full mt-2 w-56 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl shadow-lg py-1 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
-                <div className="px-4 py-3 border-b border-slate-100 dark:border-slate-700">
-                  <p className="text-sm font-semibold text-slate-900 dark:text-white">{user?.name}</p>
-                  <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">{user?.email}</p>
-                </div>
-                <button
-                  onClick={onLogout}
-                  className="w-full flex items-center gap-3 px-4 py-2.5 text-sm font-semibold text-slate-600 dark:text-slate-400 hover:text-rose-600 dark:hover:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-900/20 transition-colors"
-                >
-                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-                  </svg>
-                  Keluar
-                </button>
-              </div>
+              <AnimatePresence>
+                {userMenuOpen && (
+                  <motion.div
+                    className="absolute right-0 top-full mt-2 w-56 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl shadow-lg py-1 z-50"
+                    initial={{ opacity: 0, y: -8, scale: 0.96 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={{ opacity: 0, y: -8, scale: 0.96 }}
+                    transition={{ duration: 0.15 }}
+                  >
+                    <div className="px-4 py-3 border-b border-slate-100 dark:border-slate-700">
+                      <p className="text-sm font-semibold text-slate-900 dark:text-white">{user?.name}</p>
+                      <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">{user?.email}</p>
+                    </div>
+                    <button
+                      onClick={() => { setUserMenuOpen(false); onLogout(); }}
+                      className="w-full flex items-center gap-3 px-4 py-2.5 text-sm font-semibold text-slate-600 dark:text-slate-400 hover:text-rose-600 dark:hover:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-900/20 transition-colors"
+                    >
+                      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                      </svg>
+                      Keluar
+                    </button>
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </div>
           </div>
         </div>
       </div>
     </header>
   );
+}
+
+function cn(...classes) {
+  return classes.filter(Boolean).join(' ');
 }

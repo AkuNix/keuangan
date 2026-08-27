@@ -9,7 +9,7 @@ const NAV_ITEMS = [
   { id: 'ledger', icon: List, label: 'Buku Kas' },
 ];
 
-function SidebarContent({ activeView, onNavigate, onClose, user, onLogout }) {
+function SidebarContent({ activeView, onNavigate, onClose, user, onLogout, onProfile, onSettings }) {
   return (
     <>
       <div className="flex items-center gap-3 p-4 px-6 border-b border-slate-800">
@@ -46,6 +46,7 @@ function SidebarContent({ activeView, onNavigate, onClose, user, onLogout }) {
 
         <div className="pt-4 mt-4 border-t border-slate-800 space-y-1">
           <button
+            onClick={onProfile}
             className={cn(
               'w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold transition-all duration-150',
               'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500/30 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900',
@@ -56,6 +57,7 @@ function SidebarContent({ activeView, onNavigate, onClose, user, onLogout }) {
             <span>Profil</span>
           </button>
           <button
+            onClick={onSettings}
             className={cn(
               'w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold transition-all duration-150',
               'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500/30 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900',
@@ -95,11 +97,12 @@ function SidebarContent({ activeView, onNavigate, onClose, user, onLogout }) {
 }
 
 export function Sidebar({ isOpen, onClose, activeView, onNavigate, user, onLogout }) {
-  const navProps = { activeView, onNavigate, onClose, user, onLogout };
+  const handleProfile = () => alert('Halaman profil segera hadir!');
+  const handleSettings = () => alert('Halaman pengaturan segera hadir!');
+  const navProps = { activeView, onNavigate, onClose, user, onLogout, onProfile: handleProfile, onSettings: handleSettings };
 
   return (
     <Fragment>
-      {/* Mobile overlay */}
       <AnimatePresence>
         {isOpen && (
           <motion.div
@@ -113,7 +116,6 @@ export function Sidebar({ isOpen, onClose, activeView, onNavigate, user, onLogou
         )}
       </AnimatePresence>
 
-      {/* Desktop sidebar — always visible, no animation */}
       <aside
         className={cn(
           'hidden lg:flex lg:sticky lg:top-0 lg:z-30 lg:h-screen lg:w-60 lg:flex-col',
@@ -126,7 +128,6 @@ export function Sidebar({ isOpen, onClose, activeView, onNavigate, user, onLogou
         <SidebarContent {...navProps} />
       </aside>
 
-      {/* Mobile sidebar — animated slide-in */}
       <AnimatePresence>
         {isOpen && (
           <motion.aside
