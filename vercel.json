@@ -1,0 +1,8 @@
+{
+  "installCommand": "npm install --prefix api && npm install --prefix client",
+  "buildCommand": "npx prisma generate --schema=./api/prisma/schema.prisma && cd client && npm run build",
+  "outputDirectory": "client/dist",
+  "rewrites": [
+    { "source": "/api/(.*)", "destination": "/api" }
+  ]
+}
