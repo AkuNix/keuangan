@@ -89,6 +89,7 @@ Format berdasarkan [Keep a Changelog](https://keepachangelog.com/).
 ## Auto-generated Log
 
 <!-- Log ini di-update otomatis oleh git post-commit hook -->
+- [2026-08-27 22:46] - docs: update AGENTS.md + add CHANGELOG.md with auto-commit hook (722fffd)
 <!-- Format: [Tanggal Jam] - Commit message (hash) -->
 
 - [2026-08-27 17:45] - feat: separate Profile and Settings into dedicated pages (db33fd6)
