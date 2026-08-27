@@ -68,21 +68,21 @@ export default function Login({ onLoginSuccess }) {
       }}>
         <div className="login-grid" style={{
           display: 'grid',
-          gridTemplateColumns: 'minmax(0,1.08fr) minmax(360px,0.92fr)',
+          gridTemplateColumns: '1fr 1fr',
           gap: 16,
           minHeight: 'calc(100vh - 32px)',
         }}>
           <section className="login-hero" style={{
             background: C.panel,
             color: '#fff',
-            borderRadius: 32,
-            padding: '36px',
-            boxShadow: '0 30px 80px rgba(15,23,42,0.26)',
+            borderRadius: 20,
+            padding: '32px',
             position: 'relative',
             overflow: 'hidden',
             display: 'flex',
             flexDirection: 'column',
             justifyContent: 'space-between',
+            minWidth: 0,
           }}>
             <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none' }}>
               <div style={{ position: 'absolute', top: 40, right: 36, width: 180, height: 180, borderRadius: '50%', background: 'rgba(79,70,229,0.24)', filter: 'blur(12px)' }} />
@@ -100,7 +100,7 @@ export default function Login({ onLoginSuccess }) {
                 </div>
               </div>
 
-              <div style={{ maxWidth: 540 }}>
+              <div style={{ maxWidth: 540, minWidth: 0 }}>
                 <div style={{
                   display: 'inline-flex', alignItems: 'center', gap: 8,
                   padding: '8px 12px', borderRadius: 999,
@@ -112,12 +112,12 @@ export default function Login({ onLoginSuccess }) {
                   Ledger, charts, and login in one place
                 </div>
                 <h1 style={{
-                  fontSize: 'clamp(2.5rem, 6vw, 4.8rem)',
-                  lineHeight: 0.95,
+                  fontSize: 'clamp(1.8rem, 4vw, 3.5rem)',
+                  lineHeight: 1,
                   margin: 0,
-                  letterSpacing: '-0.05em',
-                  maxWidth: 520,
+                  letterSpacing: '-0.04em',
                   fontWeight: 800,
+                  overflow: 'hidden',
                 }}>
                   Track money like a product, not a spreadsheet.
                 </h1>
@@ -133,24 +133,25 @@ export default function Login({ onLoginSuccess }) {
               </div>
             </div>
 
-            <div style={{ position: 'relative', zIndex: 1, display: 'grid', gridTemplateColumns: 'repeat(3,minmax(0,1fr))', gap: 12, marginTop: 28 }}>
+            <div style={{ position: 'relative', zIndex: 1, display: 'grid', gridTemplateColumns: 'repeat(3,minmax(0,1fr))', gap: 10, marginTop: 28 }}>
               {[
-                { label: 'Privacy', value: 'JWT login', tone: C.brandSoft, color: C.brand, icon: ShieldCheck },
-                { label: 'Insights', value: 'Charts + ledger', tone: C.incomeBg, color: C.income, icon: BarChart3 },
-                { label: 'Stability', value: 'Neon PostgreSQL', tone: C.expenseBg, color: C.expense, icon: BadgeCheck },
+                { label: 'Privacy', value: 'JWT login', icon: ShieldCheck },
+                { label: 'Insights', value: 'Charts', icon: BarChart3 },
+                { label: 'Database', value: 'PostgreSQL', icon: BadgeCheck },
               ].map((item) => (
                 <div key={item.label} style={{
                   background: 'rgba(255,255,255,0.05)',
                   border: '1px solid rgba(255,255,255,0.08)',
-                  borderRadius: 20,
-                  padding: 16,
+                  borderRadius: 14,
+                  padding: 14,
+                  minWidth: 0,
+                  overflow: 'hidden',
                 }}>
-                  <div style={{ display: 'inline-flex', alignItems: 'center', gap: 8, fontSize: 11, color: 'rgba(255,255,255,0.60)', marginBottom: 10 }}>
-                    <span style={{ width: 8, height: 8, borderRadius: '50%', background: item.color, boxShadow: `0 0 0 6px ${item.tone}14` }} />
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 11, color: 'rgba(255,255,255,0.5)', marginBottom: 8 }}>
+                    <item.icon size={12} />
                     {item.label}
                   </div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 14, fontWeight: 700, letterSpacing: '-0.02em' }}>
-                    <item.icon size={14} />
+                  <div style={{ fontSize: 13, fontWeight: 700, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                     {item.value}
                   </div>
                 </div>
@@ -158,15 +159,14 @@ export default function Login({ onLoginSuccess }) {
             </div>
           </section>
 
-          <section className="login-panel" style={{ display: 'flex', alignItems: 'center' }}>
+          <section className="login-panel" style={{ display: 'flex', alignItems: 'center', minWidth: 0 }}>
             <div className="login-card" style={{
               width: '100%',
-              borderRadius: 32,
-              background: 'rgba(255,255,255,0.84)',
-              backdropFilter: 'blur(18px)',
+              borderRadius: 20,
+              background: C.surface,
               border: `1px solid ${C.borderSoft}`,
-              boxShadow: '0 24px 60px rgba(15,23,42,0.10)',
               padding: 28,
+              minWidth: 0,
             }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12, marginBottom: 22 }}>
                 <div>
