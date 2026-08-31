@@ -1,7 +1,7 @@
 import { motion, AnimatePresence } from 'framer-motion';
 import { Fragment } from 'react';
 import { cn } from '@/lib/utils';
-import { LayoutDashboard, List, LogOut, BookOpen, User, Settings, PiggyBank } from 'lucide-react';
+import { LayoutDashboard, List, LogOut, User, Settings, PiggyBank } from 'lucide-react';
 import { getInitials } from '@/lib/utils';
 
 const NAV_ITEMS = [
@@ -19,9 +19,7 @@ function SidebarContent({ activeView, onNavigate, onClose, user, onLogout }) {
   return (
     <>
       <div className="flex items-center gap-3 p-4 px-6 border-b border-slate-800">
-        <div className="w-10 h-10 rounded-xl bg-indigo-600/20 flex items-center justify-center flex-shrink-0">
-          <BookOpen size={20} className="text-indigo-400" />
-        </div>
+        <img src="/favicon.svg" alt="KeuanganKu" className="w-10 h-10 rounded-xl flex-shrink-0" />
         <span className="font-bold text-lg tracking-tight truncate">KeuanganKu</span>
       </div>
 

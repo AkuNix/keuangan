@@ -66,5 +66,5 @@ export const CAT_COLORS = [
 
 export const CATEGORIES = {
   INCOME: ['Gaji', 'Investasi', 'Freelance', 'Hadiah', 'Lain-lain'],
-  EXPENSE: ['Makanan', 'Transportasi', 'Belanja', 'Tagihan', 'Hiburan', 'Kesehatan', 'Lain-lain'],
+  EXPENSE: ['Makanan/Minuman', 'Transportasi', 'Belanja', 'Tagihan', 'Hiburan', 'Kesehatan', 'Lain-lain'],
 };

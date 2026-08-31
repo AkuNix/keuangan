@@ -1,0 +1,7 @@
+<svg width="560" height="160" viewBox="0 0 560 160" xmlns="http://www.w3.org/2000/svg">
+  <rect x="10" y="10" width="140" height="140" rx="32" fill="#0F6E56"/>
+  <rect x="42" y="49" width="76" height="62" rx="11" fill="#FFFFFF"/>
+  <rect x="42" y="49" width="76" height="17" rx="11" fill="#9FE1CB"/>
+  <circle cx="97" cy="80" r="7" fill="#D85A30"/>
+  <text x="172" y="98" font-family="Arial, sans-serif" font-size="52" font-weight="700" fill="#1A1A1A">Uangku</text>
+</svg>
